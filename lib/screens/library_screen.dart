@@ -4,7 +4,9 @@ import '../models/book.dart';
 import 'details_screen.dart';
 
 class LibraryScreen extends StatelessWidget {
-  const LibraryScreen({Key? key}) : super(key: key);
+  final VoidCallback? onBack; // Added onBack callback
+
+  const LibraryScreen({super.key, this.onBack}); // Updated to use super.key
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +31,7 @@ class LibraryScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
+                      onTap: onBack ?? () => Navigator.pop(context), // Use onBack if provided, else pop
                       child: Container(
                         width: 48,
                         height: 48,

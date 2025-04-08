@@ -7,13 +7,13 @@ import 'profile_screen.dart';
 import 'details_screen.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  const MainScreen({super.key});
 
   @override
-  MainScreenState createState() => MainScreenState();
+  State<MainScreen> createState() => _MainScreenState();
 }
 
-class MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   final List<Book> books = [
     Book(title: 'Moby Dick', author: 'Herman Melville', genre: 'Drama', coverUrl: 'images/book1.png'),
@@ -31,17 +31,17 @@ class MainScreenState extends State<MainScreen> {
   final List<String> categories = ['All', 'Detective', 'Drama', 'Historical'];
   String selectedCategory = 'All';
 
-  final List<Widget> _screens = [
-    Container(), // Placeholder for Main content
-    const SearchScreen(),
-    const LibraryScreen(),
-    const ProfileScreen(),
-  ];
+  late final List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
-    _screens[0] = _buildMainContent();
+    _screens = [
+      _buildMainContent(),
+      SearchScreen(onBack: () => setState(() => _selectedIndex = 0)),
+      LibraryScreen(onBack: () => setState(() => _selectedIndex = 0)),
+      const ProfileScreen(),
+    ];
   }
 
   Widget _buildMainContent() {

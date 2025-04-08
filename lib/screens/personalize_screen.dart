@@ -3,10 +3,10 @@ import '../constants/theme_constants.dart';
 import 'main_screen.dart';
 
 class PersonalizeScreen extends StatefulWidget {
-  const PersonalizeScreen({Key? key}) : super(key: key);
+  const PersonalizeScreen({super.key});
 
   @override
-  _PersonalizeScreenState createState() => _PersonalizeScreenState();
+  State<PersonalizeScreen> createState() => _PersonalizeScreenState();
 }
 
 class _PersonalizeScreenState extends State<PersonalizeScreen> {

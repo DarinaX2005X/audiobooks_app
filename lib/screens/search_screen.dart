@@ -4,10 +4,12 @@ import '../models/book.dart';
 import 'details_screen.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({Key? key}) : super(key: key);
+  final VoidCallback? onBack;
+
+  const SearchScreen({super.key, this.onBack});
 
   @override
-  _SearchScreenState createState() => _SearchScreenState();
+  State<SearchScreen> createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen> {
@@ -34,9 +36,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
+                      onTap: widget.onBack ?? () => Navigator.pop(context), // Use onBack if provided, else pop
                       child: Container(
                         width: 48,
                         height: 48,

@@ -6,10 +6,10 @@ import 'text_screen.dart';
 class DetailsScreen extends StatefulWidget {
   final Book book;
 
-  const DetailsScreen({Key? key, required this.book}) : super(key: key);
+  const DetailsScreen({super.key, required this.book});
 
   @override
-  _DetailsScreenState createState() => _DetailsScreenState();
+  State<DetailsScreen> createState() => _DetailsScreenState();
 }
 
 class _DetailsScreenState extends State<DetailsScreen> {

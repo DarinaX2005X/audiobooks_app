@@ -5,11 +5,11 @@ import 'screens/register_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/personalize_screen.dart';
 import 'screens/main_screen.dart';
-import 'screens/search_screen.dart';
-import 'screens/library_screen.dart';
-import 'screens/profile_screen.dart';
 import 'screens/forget_password_screen.dart';
+import 'screens/details_screen.dart';
+import 'screens/text_screen.dart';
 import 'constants/theme_constants.dart';
+import 'models/book.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +21,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,10 +43,11 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/personalize': (context) => const PersonalizeScreen(),
         '/main': (context) => const MainScreen(),
-        '/search': (context) => const SearchScreen(),
-        '/library': (context) => const LibraryScreen(),
-        '/profile': (context) => const ProfileScreen(),
         '/forget_password': (context) => const ForgetPasswordScreen(),
+        '/details': (context) => DetailsScreen(
+          book: ModalRoute.of(context)!.settings.arguments as Book,
+        ),
+        '/text': (context) => const TextScreen(),
       },
     );
   }
