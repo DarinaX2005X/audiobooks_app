@@ -1,0 +1,53 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'screens/onboarding_screen.dart';
+import 'screens/register_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/personalize_screen.dart';
+import 'screens/main_screen.dart';
+import 'screens/search_screen.dart';
+import 'screens/library_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/forget_password_screen.dart';
+import 'constants/theme_constants.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Genre Selection App',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        scaffoldBackgroundColor: AppColors.darkBackground,
+        fontFamily: AppTextStyles.albraFontFamily,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.accentRed,
+          brightness: Brightness.dark,
+        ),
+      ),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const OnboardingScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/personalize': (context) => const PersonalizeScreen(),
+        '/main': (context) => const MainScreen(),
+        '/search': (context) => const SearchScreen(),
+        '/library': (context) => const LibraryScreen(),
+        '/profile': (context) => const ProfileScreen(),
+        '/forget_password': (context) => const ForgetPasswordScreen(),
+      },
+    );
+  }
+}
