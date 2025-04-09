@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import '../constants/theme_constants.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  final VoidCallback? onBack;
+
+  const ProfileScreen({super.key, this.onBack});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1EEE3),
+      backgroundColor: AppColors.lightBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -18,9 +20,7 @@ class ProfileScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
+                      onTap: onBack ?? () => Navigator.pop(context),
                       child: Container(
                         width: 48,
                         height: 48,
@@ -79,8 +79,8 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
+                      )
+                    )
                   ),
                   Positioned(
                     right: 0,

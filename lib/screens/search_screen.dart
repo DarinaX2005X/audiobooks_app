@@ -15,28 +15,62 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   bool isSearching = false;
   final TextEditingController _searchController = TextEditingController();
-
+  // List of books to search through
   final List<Book> searchResults = [
     Book(title: 'Sorcerer’s Stone', author: 'J.K Rowling', genre: 'Fantasy', coverUrl: 'images/book1.png'),
     Book(title: 'Chamber of Secrets', author: 'J.K Rowling', genre: 'Fantasy', coverUrl: 'images/book2.png'),
+    Book(title: 'Moby Dick', author: 'Herman Melville', genre: 'Drama', coverUrl: 'images/book3.png'),
+    Book(title: 'The Big Sleep', author: 'Raymond Chandler', genre: 'Detective', coverUrl: 'images/book4.png'),
   ];
+  List<Book> _filteredResults = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredResults = searchResults; // Initially show all results
+    _searchController.addListener(_filterResults);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // Filters search results based on the search query
+  void _filterResults() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      isSearching = query.isNotEmpty;
+      if (query.isEmpty) {
+        _filteredResults = searchResults;
+      } else {
+        _filteredResults = searchResults.where((book) {
+          return book.title.toLowerCase().contains(query) ||
+              book.author.toLowerCase().contains(query);
+        }).toList();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1EEE3),
+      backgroundColor: AppColors.lightBackground,
       body: SafeArea(
+        // Use SingleChildScrollView for vertical scrolling
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header with back button, title, and filter icon
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     GestureDetector(
-                      onTap: widget.onBack ?? () => Navigator.pop(context), // Use onBack if provided, else pop
+                      onTap: widget.onBack ?? () => Navigator.pop(context),
                       child: Container(
                         width: 48,
                         height: 48,
@@ -87,6 +121,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
+                    // Search bar
                     Container(
                       width: 335,
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -108,11 +143,6 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                           border: InputBorder.none,
                         ),
-                        onChanged: (value) {
-                          setState(() {
-                            isSearching = value.isNotEmpty;
-                          });
-                        },
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -127,6 +157,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      // Horizontal ListView for genres
                       _buildGenreRow(['Fantasy', 'Drama']),
                       const SizedBox(height: 15),
                       _buildGenreRow(['Fiction', 'Detective']),
@@ -141,7 +172,11 @@ class _SearchScreenState extends State<SearchScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _buildBookRow(Book(title: 'Moby Dick', author: 'Herman Melville', genre: 'Drama', coverUrl: 'images/book1.png')),
+                      _buildBookRow(Book(
+                          title: 'Moby Dick',
+                          author: 'Herman Melville',
+                          genre: 'Drama',
+                          coverUrl: 'images/book1.png')),
                     ] else ...[
                       const Text(
                         'Search results',
@@ -153,7 +188,21 @@ class _SearchScreenState extends State<SearchScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      ...searchResults.map((book) => _buildBookRow(book)).toList(),
+                      // Display filtered search results
+                      if (_filteredResults.isEmpty)
+                        const Center(
+                          child: Text(
+                            'No results found',
+                            style: TextStyle(
+                              color: Color(0xFF191714),
+                              fontSize: 16,
+                              fontFamily: AppTextStyles.albraGroteskFontFamily,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        )
+                      else
+                        ..._filteredResults.map((book) => _buildBookRow(book)).toList(),
                     ],
                   ],
                 ),
@@ -165,12 +214,16 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  // Builds a horizontal ListView for genres
   Widget _buildGenreRow(List<String> genres) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: genres.map((genre) {
-        return Expanded(
-          child: Container(
+    return SizedBox(
+      height: 50,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: genres.length,
+        itemBuilder: (context, index) {
+          final genre = genres[index];
+          return Container(
             margin: const EdgeInsets.symmetric(horizontal: 7.5),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: const ShapeDecoration(
@@ -190,12 +243,13 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
             ),
-          ),
-        );
-      }).toList(),
+          );
+        },
+      ),
     );
   }
 
+  // Builds a row for displaying a book
   Widget _buildBookRow(Book book) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),

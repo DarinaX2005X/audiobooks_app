@@ -8,18 +8,20 @@ class ForgetPasswordScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1EEE3),
+      backgroundColor: AppColors.lightBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Title for the forget password screen
               Text(
                 'Forget Password',
                 style: AppTextStyles.titleStyle.copyWith(color: const Color(0xFF191714)),
               ),
               const SizedBox(height: 20),
+              // Email input field
               TextField(
                 decoration: InputDecoration(
                   filled: true,
@@ -37,9 +39,9 @@ class ForgetPasswordScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
+              // Send reset link button
               ElevatedButton(
                 onPressed: () {
-                  // Simulate sending a reset link
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Reset link sent to your email!')),
                   );
@@ -60,6 +62,7 @@ class ForgetPasswordScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
+              // Back to login button
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);

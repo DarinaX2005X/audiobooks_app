@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// Defines the color constants used throughout the app
 class AppColors {
   static const Color darkBackground = Color(0xFF191714);
   static const Color accentRed = Color(0xFFE36166);
@@ -7,6 +8,7 @@ class AppColors {
   static const Color lightBackground = Color(0xFFF1EEE3);
 }
 
+// Defines the text styles used throughout the app
 class AppTextStyles {
   static const String albraFontFamily = 'Albra';
   static const String albraGroteskFontFamily = 'Albra Grotesk TRIAL';

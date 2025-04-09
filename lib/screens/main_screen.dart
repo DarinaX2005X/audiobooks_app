@@ -40,7 +40,7 @@ class _MainScreenState extends State<MainScreen> {
       _buildMainContent(),
       SearchScreen(onBack: () => setState(() => _selectedIndex = 0)),
       LibraryScreen(onBack: () => setState(() => _selectedIndex = 0)),
-      const ProfileScreen(),
+      ProfileScreen(onBack: () => setState(() => _selectedIndex = 0)),
     ];
   }
 

@@ -16,18 +16,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1EEE3),
+      backgroundColor: AppColors.lightBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Title for the register screen
               Text(
                 'Register',
                 style: AppTextStyles.titleStyle.copyWith(color: const Color(0xFF191714)),
               ),
               const SizedBox(height: 20),
+              // Email input field
               TextField(
                 decoration: InputDecoration(
                   filled: true,
@@ -45,6 +47,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 10),
+              // Password input field
               TextField(
                 decoration: InputDecoration(
                   filled: true,
@@ -63,6 +66,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 obscureText: true,
               ),
               const SizedBox(height: 10),
+              // Terms and conditions checkbox
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -89,6 +93,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ],
               ),
               const SizedBox(height: 20),
+              // Register button
               ElevatedButton(
                 onPressed: _isAccepted
                     ? () {
@@ -100,7 +105,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.buttonRed,
-                  disabledBackgroundColor: Colors.grey[400], // Grey when disabled
+                  disabledBackgroundColor: Colors.grey[400],
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(100),
                   ),
@@ -109,11 +114,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Text(
                   'Register',
                   style: AppTextStyles.buttonTextStyle.copyWith(
-                    color: _isAccepted ? Colors.white : Colors.grey[700], // Grey text when disabled
+                    color: _isAccepted ? Colors.white : Colors.grey[700],
                   ),
                 ),
               ),
               const SizedBox(height: 10),
+              // Login link
               TextButton(
                 onPressed: () {
                   Navigator.push(

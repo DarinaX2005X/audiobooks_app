@@ -1,3 +1,4 @@
+// Model class representing a book with its properties
 class Book {
   final String title;
   final String author;

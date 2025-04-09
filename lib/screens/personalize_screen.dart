@@ -28,13 +28,14 @@ class _PersonalizeScreenState extends State<PersonalizeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1EEE3),
+      backgroundColor: AppColors.lightBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Back button
               GestureDetector(
                 onTap: () {
                   Navigator.pop(context);
@@ -52,6 +53,7 @@ class _PersonalizeScreenState extends State<PersonalizeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+              // Title and description
               Text(
                 'Personalize Suggestion',
                 style: AppTextStyles.titleStyle.copyWith(color: const Color(0xFF191714)),
@@ -67,6 +69,7 @@ class _PersonalizeScreenState extends State<PersonalizeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+              // Genre selection using Wrap
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
@@ -104,6 +107,7 @@ class _PersonalizeScreenState extends State<PersonalizeScreen> {
                 }).toList(),
               ),
               const Spacer(),
+              // Skip and Continue buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

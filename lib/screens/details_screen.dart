@@ -19,7 +19,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1EEE3),
+      backgroundColor: AppColors.lightBackground, // Ensure consistent background
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -238,7 +238,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 onTap: () {
                                   setState(() {
                                     _isPlaying = !_isPlaying;
-                                    // Simulate progress update
                                     if (_isPlaying) {
                                       _startProgressSimulation();
                                     }

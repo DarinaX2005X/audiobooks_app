@@ -27,6 +27,7 @@ class OnboardingScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Onboarding title with highlighted "Genre"
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
@@ -43,6 +44,7 @@ class OnboardingScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                  // Onboarding image
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 75),
@@ -55,6 +57,7 @@ class OnboardingScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  // Next button to proceed to registration
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Container(

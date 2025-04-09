@@ -17,18 +17,20 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1EEE3),
+      backgroundColor: AppColors.lightBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Title for the login screen
               Text(
                 'Login',
                 style: AppTextStyles.titleStyle.copyWith(color: const Color(0xFF191714)),
               ),
               const SizedBox(height: 20),
+              // Email input field
               TextField(
                 decoration: InputDecoration(
                   filled: true,
@@ -46,6 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 10),
+              // Password input field
               TextField(
                 decoration: InputDecoration(
                   filled: true,
@@ -64,6 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 obscureText: true,
               ),
               const SizedBox(height: 10),
+              // Remember me checkbox
               Row(
                 children: [
                   Checkbox(
@@ -87,6 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
               const SizedBox(height: 20),
+              // Login button
               ElevatedButton(
                 onPressed: () {
                   Navigator.pushReplacement(
@@ -106,6 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 10),
+              // Register link
               TextButton(
                 onPressed: () {
                   Navigator.push(
@@ -120,6 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
+              // Forget password link
               TextButton(
                 onPressed: () {
                   Navigator.push(
