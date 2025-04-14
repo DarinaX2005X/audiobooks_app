@@ -1,10 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/theme_constants.dart';
-import 'register_screen.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
+
+  // Method to mark onboarding as completed
+  Future<void> _completeOnboarding(BuildContext context) async {
+    // Save that user has seen onboarding
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('seen_onboarding', true);
+    
+    // Navigate to registration
+    if (context.mounted) {
+      Navigator.pushReplacementNamed(context, '/register');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,12 +77,7 @@ class OnboardingScreen extends StatelessWidget {
                       width: double.infinity,
                       height: 64,
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                          );
-                        },
+                        onPressed: () => _completeOnboarding(context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.buttonRed,
                           shape: RoundedRectangleBorder(

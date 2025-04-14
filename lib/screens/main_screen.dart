@@ -1,5 +1,5 @@
-import 'package:audiobooks_app/services/api_servive.dart';
 import 'package:flutter/material.dart';
+import '../services/api_servive.dart';
 import '../constants/theme_constants.dart';
 import '../models/book.dart';
 import 'search_screen.dart';
@@ -18,21 +18,9 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   final List<Book> books = [];
-  // final List<Book> books = [
-  //   Book(title: 'Moby Dick', author: 'Herman Melville', genre: 'Drama', coverUrl: 'images/book1.png'),
-  //   Book(title: 'Annihilation', author: 'Jeff VanderMeer', genre: 'Drama', coverUrl: 'images/book2.png'),
-  //   Book(title: 'The Hound of the Baskervilles', author: 'Arthur Conan Doyle', genre: 'Detective', coverUrl: 'images/book3.png'),
-  //   Book(title: 'The Big Sleep', author: 'Raymond Chandler', genre: 'Detective', coverUrl: 'images/book4.png'),
-  //   Book(title: 'Pride and Prejudice', author: 'Jane Austen', genre: 'Drama', coverUrl: 'images/book5.png'),
-  //   Book(title: 'The Name of the Rose', author: 'Umberto Eco', genre: 'Detective', coverUrl: 'images/book6.png'),
-  //   Book(title: 'To Kill a Mockingbird', author: 'Harper Lee', genre: 'Drama', coverUrl: 'images/book7.png'),
-  //   Book(title: 'The Maltese Falcon', author: 'Dashiell Hammett', genre: 'Detective', coverUrl: 'images/book8.png'),
-  //   Book(title: 'Gone with the Wind', author: 'Margaret Mitchell', genre: 'Drama', coverUrl: 'images/book9.png'),
-  //   Book(title: 'And Then There Were None', author: 'Agatha Christie', genre: 'Detective', coverUrl: 'images/book10.png'),
-  // ];
-  //
-  final List<String> categories = [];
+  final List<String> categories = ['All']; // Initialize with "All"
   String selectedCategory = 'All';
+  bool isLoading = true;
 
   late final List<Widget> _screens;
 
@@ -45,186 +33,279 @@ class _MainScreenState extends State<MainScreen> {
       LibraryScreen(onBack: () => setState(() => _selectedIndex = 0)),
       ProfileScreen(onBack: () => setState(() => _selectedIndex = 0)),
     ];
-    _loadBooks(); // new
+    _loadData(); // Load both books and categories
   }
 
-  void _loadBooks() async {
+  Future<void> _loadData() async {
+    setState(() {
+      isLoading = true;
+    });
+
     try {
+      // First load categories
+      final fetchedCategories = await ApiService.fetchCategories();
+
+      // Then load books
       final fetchedBooks = await ApiService.fetchBooks();
+
       setState(() {
+        // Update categories
+        categories.clear();
+        categories.add('All'); // Always include "All" category
+        categories.addAll(fetchedCategories.map((category) => category.name));
+
+        // Update books
         books.clear();
         books.addAll(fetchedBooks);
+
+        // Set loading to false
+        isLoading = false;
       });
+
+      print(
+        'Data loaded: ${categories.length} categories, ${books.length} books',
+      );
     } catch (e) {
-      print('Error loading books: $e');
+      print('Error loading data: $e');
+      setState(() {
+        isLoading = false;
+      });
+
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
+      }
     }
   }
 
   Widget _buildMainContent() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Container(
-            width: 375,
-            padding: const EdgeInsets.only(top: 20),
-            decoration: const BoxDecoration(color: Color(0xFFF1EEE3)),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: const ShapeDecoration(
-                                image: DecorationImage(
-                                  image: AssetImage("images/user.png"),
-                                  fit: BoxFit.fill,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(100),
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.only(top: 20),
+              decoration: const BoxDecoration(color: Color(0xFFF1EEE3)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // User header section
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: const ShapeDecoration(
+                                  image: DecorationImage(
+                                    image: AssetImage("images/user.png"),
+                                    fit: BoxFit.fill,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(100),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Flexible(
-                              child: Text.rich(
-                                TextSpan(
-                                  children: [
-                                    const TextSpan(
-                                      text: 'Hey, ',
-                                      style: TextStyle(
-                                        color: Color(0xFF272A34),
-                                        fontSize: 24,
-                                        fontFamily:
-                                            AppTextStyles.albraFontFamily,
-                                        fontWeight: FontWeight.w500,
-                                        height: 1.60,
+                              const SizedBox(width: 12),
+                              Flexible(
+                                child: Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      const TextSpan(
+                                        text: 'Hey, ',
+                                        style: TextStyle(
+                                          color: Color(0xFF272A34),
+                                          fontSize: 24,
+                                          fontFamily:
+                                              AppTextStyles.albraFontFamily,
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.60,
+                                        ),
                                       ),
-                                    ),
-                                    TextSpan(
-                                      text: 'John!\n',
-                                      style: TextStyle(
-                                        color: AppColors.accentRed,
-                                        fontSize: 24,
-                                        fontFamily:
-                                            AppTextStyles.albraFontFamily,
-                                        fontWeight: FontWeight.w500,
-                                        height: 1.60,
+                                      TextSpan(
+                                        text: 'John!\n',
+                                        style: TextStyle(
+                                          color: AppColors.accentRed,
+                                          fontSize: 24,
+                                          fontFamily:
+                                              AppTextStyles.albraFontFamily,
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.60,
+                                        ),
                                       ),
-                                    ),
-                                    const TextSpan(
-                                      text: 'What will you listen today?',
-                                      style: TextStyle(
-                                        color: Color(0xFF272A34),
-                                        fontSize: 24,
-                                        fontFamily:
-                                            AppTextStyles.albraFontFamily,
-                                        fontWeight: FontWeight.w500,
-                                        height: 1.60,
+                                      const TextSpan(
+                                        text: 'What will you listen today?',
+                                        style: TextStyle(
+                                          color: Color(0xFF272A34),
+                                          fontSize: 24,
+                                          fontFamily:
+                                              AppTextStyles.albraFontFamily,
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.60,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: const ShapeDecoration(
-                          color: Color(0xFF191714),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(100),
-                            ),
+                            ],
                           ),
                         ),
-                        child: const Icon(
-                          Icons.notifications,
-                          color: Colors.white,
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: const ShapeDecoration(
+                            color: Color(0xFF191714),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(100),
+                              ),
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.notifications,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children:
-                          categories.map((category) {
-                            bool isSelected = selectedCategory == category;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    selectedCategory = category;
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 14,
-                                  ),
-                                  decoration: ShapeDecoration(
-                                    color:
-                                        isSelected
-                                            ? const Color(0xFF191714)
-                                            : const Color(0xFFE6DFCA),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(100),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Categories section
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children:
+                            categories.map((category) {
+                              bool isSelected = selectedCategory == category;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      selectedCategory = category;
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 14,
                                     ),
-                                  ),
-                                  child: Text(
-                                    category,
-                                    style: TextStyle(
+                                    decoration: ShapeDecoration(
                                       color:
                                           isSelected
-                                              ? const Color(0xFFF1EEE3)
-                                              : const Color(0xFF191714),
-                                      fontSize: 14,
-                                      fontFamily:
-                                          AppTextStyles.albraGroteskFontFamily,
-                                      fontWeight: FontWeight.w400,
+                                              ? const Color(0xFF191714)
+                                              : const Color(0xFFE6DFCA),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          100,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      category,
+                                      style: TextStyle(
+                                        color:
+                                            isSelected
+                                                ? const Color(0xFFF1EEE3)
+                                                : const Color(0xFF191714),
+                                        fontSize: 14,
+                                        fontFamily:
+                                            AppTextStyles
+                                                .albraGroteskFontFamily,
+                                        fontWeight: FontWeight.w400,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                          }).toList(),
+                              );
+                            }).toList(),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  ..._buildBookSections(),
-                ],
+                    const SizedBox(height: 24),
+
+                    // Display loading indicator if loading
+                    if (isLoading)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(20.0),
+                          child: CircularProgressIndicator(),
+                        ),
+                      )
+                    else if (books.isEmpty)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(20.0),
+                          child: Text('No books available'),
+                        ),
+                      )
+                    else
+                      ..._buildBookSections(),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   List<Widget> _buildBookSections() {
+    print(
+      'Building book sections with ${books.length} books, selectedCategory: $selectedCategory',
+    );
+
+    // If we have no books, show a message (though this should be caught earlier)
+    if (books.isEmpty) {
+      return [
+        const Center(
+          child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Text('No books available'),
+          ),
+        ),
+      ];
+    }
+
+    // Group books by genre
     Map<String, List<Book>> booksByGenre = {};
+
     for (var book in books) {
+      // Only filter books if 'All' is not selected
       if (selectedCategory == 'All' || book.genre == selectedCategory) {
+        // Use putIfAbsent to create a new list if genre key doesn't exist
         booksByGenre.putIfAbsent(book.genre, () => []).add(book);
       }
     }
 
+    print('Grouped books by genre: ${booksByGenre.keys.toList()}');
+
+    // If no books match the category filter, show a message
+    if (booksByGenre.isEmpty) {
+      return [
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Text('No books found in the "${selectedCategory}" category'),
+          ),
+        ),
+      ];
+    }
+
+    // Build UI sections for each genre
     List<Widget> sections = [];
+
     booksByGenre.forEach((genre, genreBooks) {
       sections.add(
         Column(
@@ -290,32 +371,91 @@ class _MainScreenState extends State<MainScreen> {
                                     ),
                                   ],
                                 ),
-                                child: Image.asset(
-                                  book.coverUrl,
-                                  fit: BoxFit.cover,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child:
+                                      book.coverUrl.isNotEmpty
+                                          ? book.coverUrl.startsWith('http')
+                                              ? Image.network(
+                                                book.coverUrl,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (
+                                                  context,
+                                                  error,
+                                                  stackTrace,
+                                                ) {
+                                                  print(
+                                                    'Error loading image: $error',
+                                                  );
+                                                  return Container(
+                                                    color: Colors.grey.shade200,
+                                                    child: const Icon(
+                                                      Icons.book,
+                                                      size: 50,
+                                                    ),
+                                                  );
+                                                },
+                                              )
+                                              : Image.asset(
+                                                book.coverUrl,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (
+                                                  context,
+                                                  error,
+                                                  stackTrace,
+                                                ) {
+                                                  print(
+                                                    'Error loading asset image: $error',
+                                                  );
+                                                  return Container(
+                                                    color: Colors.grey.shade200,
+                                                    child: const Icon(
+                                                      Icons.book,
+                                                      size: 50,
+                                                    ),
+                                                  );
+                                                },
+                                              )
+                                          : Container(
+                                            color: Colors.grey.shade200,
+                                            child: const Icon(
+                                              Icons.book,
+                                              size: 50,
+                                            ),
+                                          ),
                                 ),
                               ),
                               const SizedBox(height: 14),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    book.title,
-                                    style: const TextStyle(
-                                      color: Color(0xFF191714),
-                                      fontSize: 16,
-                                      fontFamily: AppTextStyles.albraFontFamily,
-                                      fontWeight: FontWeight.w500,
+                                  SizedBox(
+                                    width: 160,
+                                    child: Text(
+                                      book.title,
+                                      style: const TextStyle(
+                                        color: Color(0xFF191714),
+                                        fontSize: 16,
+                                        fontFamily:
+                                            AppTextStyles.albraFontFamily,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  Text(
-                                    book.author,
-                                    style: const TextStyle(
-                                      color: Color(0xFF191714),
-                                      fontSize: 14,
-                                      fontFamily:
-                                          AppTextStyles.albraGroteskFontFamily,
-                                      fontWeight: FontWeight.w400,
+                                  SizedBox(
+                                    width: 160,
+                                    child: Text(
+                                      book.author,
+                                      style: const TextStyle(
+                                        color: Color(0xFF191714),
+                                        fontSize: 14,
+                                        fontFamily:
+                                            AppTextStyles
+                                                .albraGroteskFontFamily,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
@@ -332,6 +472,7 @@ class _MainScreenState extends State<MainScreen> {
         ),
       );
     });
+
     return sections;
   }
 
@@ -379,4 +520,3 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 }
-

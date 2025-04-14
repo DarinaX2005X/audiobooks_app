@@ -1,18 +1,58 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import '../models/book.dart';
+import '../models/category.dart';
+import 'auth_service.dart';
 
 class ApiService {
-  static const String baseUrl =
-      'http://localhost:3000/api'; // replace with your NestJS backend URL
+  static final Dio _dio = AuthService.dioInstance;
 
   static Future<List<Book>> fetchBooks() async {
-    final response = await http.get(Uri.parse('$baseUrl/books'));
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.map((json) => Book.fromJson(json)).toList();
-    } else {
+    try {
+      print('📚 Fetching books from /books');
+
+      final response = await _dio.get('/books');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        final books = data.map((json) => Book.fromJson(json)).toList();
+        print('✅ Parsed ${books.length} books');
+        return books;
+      } else {
+        print('❌ Error response: ${response.statusCode}');
+        throw Exception('Failed to load books');
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await AuthService.logout();
+        throw Exception('Session expired. Please login again.');
+      }
+      print('⚠️ Dio error: $e');
       throw Exception('Failed to load books');
+    }
+  }
+
+  static Future<List<Category>> fetchCategories() async {
+    try {
+      print('📂 Fetching categories from /categories');
+
+      final response = await _dio.get('/categories');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        final categories = data.map((json) => Category.fromJson(json)).toList();
+        print('✅ Parsed ${categories.length} categories');
+        return categories;
+      } else {
+        print('❌ Error response: ${response.statusCode}');
+        throw Exception('Failed to load categories');
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await AuthService.logout();
+        throw Exception('Session expired. Please login again.');
+      }
+      print('⚠️ Dio error: $e');
+      throw Exception('Failed to load categories');
     }
   }
 }
