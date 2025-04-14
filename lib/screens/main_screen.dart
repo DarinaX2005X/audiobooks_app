@@ -1,3 +1,4 @@
+import 'package:audiobooks_app/services/api_servive.dart';
 import 'package:flutter/material.dart';
 import '../constants/theme_constants.dart';
 import '../models/book.dart';
@@ -15,20 +16,22 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  final List<Book> books = [
-    Book(title: 'Moby Dick', author: 'Herman Melville', genre: 'Drama', coverUrl: 'images/book1.png'),
-    Book(title: 'Annihilation', author: 'Jeff VanderMeer', genre: 'Drama', coverUrl: 'images/book2.png'),
-    Book(title: 'The Hound of the Baskervilles', author: 'Arthur Conan Doyle', genre: 'Detective', coverUrl: 'images/book3.png'),
-    Book(title: 'The Big Sleep', author: 'Raymond Chandler', genre: 'Detective', coverUrl: 'images/book4.png'),
-    Book(title: 'Pride and Prejudice', author: 'Jane Austen', genre: 'Drama', coverUrl: 'images/book5.png'),
-    Book(title: 'The Name of the Rose', author: 'Umberto Eco', genre: 'Detective', coverUrl: 'images/book6.png'),
-    Book(title: 'To Kill a Mockingbird', author: 'Harper Lee', genre: 'Drama', coverUrl: 'images/book7.png'),
-    Book(title: 'The Maltese Falcon', author: 'Dashiell Hammett', genre: 'Detective', coverUrl: 'images/book8.png'),
-    Book(title: 'Gone with the Wind', author: 'Margaret Mitchell', genre: 'Drama', coverUrl: 'images/book9.png'),
-    Book(title: 'And Then There Were None', author: 'Agatha Christie', genre: 'Detective', coverUrl: 'images/book10.png'),
-  ];
 
-  final List<String> categories = ['All', 'Detective', 'Drama', 'Historical'];
+  final List<Book> books = [];
+  // final List<Book> books = [
+  //   Book(title: 'Moby Dick', author: 'Herman Melville', genre: 'Drama', coverUrl: 'images/book1.png'),
+  //   Book(title: 'Annihilation', author: 'Jeff VanderMeer', genre: 'Drama', coverUrl: 'images/book2.png'),
+  //   Book(title: 'The Hound of the Baskervilles', author: 'Arthur Conan Doyle', genre: 'Detective', coverUrl: 'images/book3.png'),
+  //   Book(title: 'The Big Sleep', author: 'Raymond Chandler', genre: 'Detective', coverUrl: 'images/book4.png'),
+  //   Book(title: 'Pride and Prejudice', author: 'Jane Austen', genre: 'Drama', coverUrl: 'images/book5.png'),
+  //   Book(title: 'The Name of the Rose', author: 'Umberto Eco', genre: 'Detective', coverUrl: 'images/book6.png'),
+  //   Book(title: 'To Kill a Mockingbird', author: 'Harper Lee', genre: 'Drama', coverUrl: 'images/book7.png'),
+  //   Book(title: 'The Maltese Falcon', author: 'Dashiell Hammett', genre: 'Detective', coverUrl: 'images/book8.png'),
+  //   Book(title: 'Gone with the Wind', author: 'Margaret Mitchell', genre: 'Drama', coverUrl: 'images/book9.png'),
+  //   Book(title: 'And Then There Were None', author: 'Agatha Christie', genre: 'Detective', coverUrl: 'images/book10.png'),
+  // ];
+  //
+  final List<String> categories = [];
   String selectedCategory = 'All';
 
   late final List<Widget> _screens;
@@ -42,6 +45,19 @@ class _MainScreenState extends State<MainScreen> {
       LibraryScreen(onBack: () => setState(() => _selectedIndex = 0)),
       ProfileScreen(onBack: () => setState(() => _selectedIndex = 0)),
     ];
+    _loadBooks(); // new
+  }
+
+  void _loadBooks() async {
+    try {
+      final fetchedBooks = await ApiService.fetchBooks();
+      setState(() {
+        books.clear();
+        books.addAll(fetchedBooks);
+      });
+    } catch (e) {
+      print('Error loading books: $e');
+    }
   }
 
   Widget _buildMainContent() {
@@ -72,7 +88,9 @@ class _MainScreenState extends State<MainScreen> {
                                   fit: BoxFit.fill,
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(Radius.circular(100)),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(100),
+                                  ),
                                 ),
                               ),
                             ),
@@ -86,7 +104,8 @@ class _MainScreenState extends State<MainScreen> {
                                       style: TextStyle(
                                         color: Color(0xFF272A34),
                                         fontSize: 24,
-                                        fontFamily: AppTextStyles.albraFontFamily,
+                                        fontFamily:
+                                            AppTextStyles.albraFontFamily,
                                         fontWeight: FontWeight.w500,
                                         height: 1.60,
                                       ),
@@ -96,7 +115,8 @@ class _MainScreenState extends State<MainScreen> {
                                       style: TextStyle(
                                         color: AppColors.accentRed,
                                         fontSize: 24,
-                                        fontFamily: AppTextStyles.albraFontFamily,
+                                        fontFamily:
+                                            AppTextStyles.albraFontFamily,
                                         fontWeight: FontWeight.w500,
                                         height: 1.60,
                                       ),
@@ -106,7 +126,8 @@ class _MainScreenState extends State<MainScreen> {
                                       style: TextStyle(
                                         color: Color(0xFF272A34),
                                         fontSize: 24,
-                                        fontFamily: AppTextStyles.albraFontFamily,
+                                        fontFamily:
+                                            AppTextStyles.albraFontFamily,
                                         fontWeight: FontWeight.w500,
                                         height: 1.60,
                                       ),
@@ -124,10 +145,15 @@ class _MainScreenState extends State<MainScreen> {
                         decoration: const ShapeDecoration(
                           color: Color(0xFF191714),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(100)),
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(100),
+                            ),
                           ),
                         ),
-                        child: const Icon(Icons.notifications, color: Colors.white),
+                        child: const Icon(
+                          Icons.notifications,
+                          color: Colors.white,
+                        ),
                       ),
                     ],
                   ),
@@ -135,37 +161,48 @@ class _MainScreenState extends State<MainScreen> {
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: categories.map((category) {
-                        bool isSelected = selectedCategory == category;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                selectedCategory = category;
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                              decoration: ShapeDecoration(
-                                color: isSelected ? const Color(0xFF191714) : const Color(0xFFE6DFCA),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(100),
+                      children:
+                          categories.map((category) {
+                            bool isSelected = selectedCategory == category;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    selectedCategory = category;
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 14,
+                                  ),
+                                  decoration: ShapeDecoration(
+                                    color:
+                                        isSelected
+                                            ? const Color(0xFF191714)
+                                            : const Color(0xFFE6DFCA),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    category,
+                                    style: TextStyle(
+                                      color:
+                                          isSelected
+                                              ? const Color(0xFFF1EEE3)
+                                              : const Color(0xFF191714),
+                                      fontSize: 14,
+                                      fontFamily:
+                                          AppTextStyles.albraGroteskFontFamily,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
                                 ),
                               ),
-                              child: Text(
-                                category,
-                                style: TextStyle(
-                                  color: isSelected ? const Color(0xFFF1EEE3) : const Color(0xFF191714),
-                                  fontSize: 14,
-                                  fontFamily: AppTextStyles.albraGroteskFontFamily,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                            );
+                          }).toList(),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -220,72 +257,74 @@ class _MainScreenState extends State<MainScreen> {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: genreBooks.map((book) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 18),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DetailsScreen(book: book),
-                          ),
-                        );
-                      },
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 160,
-                            height: 235,
-                            decoration: ShapeDecoration(
-                              color: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                children:
+                    genreBooks.map((book) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 18),
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DetailsScreen(book: book),
                               ),
-                              shadows: const [
-                                BoxShadow(
-                                  color: Color(0x19000000),
-                                  blurRadius: 22,
-                                  offset: Offset(-12, 10),
-                                  spreadRadius: 0,
-                                ),
-                              ],
-                            ),
-                            child: Image.asset(
-                              book.coverUrl,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          Column(
+                            );
+                          },
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                book.title,
-                                style: const TextStyle(
-                                  color: Color(0xFF191714),
-                                  fontSize: 16,
-                                  fontFamily: AppTextStyles.albraFontFamily,
-                                  fontWeight: FontWeight.w500,
+                              Container(
+                                width: 160,
+                                height: 235,
+                                decoration: ShapeDecoration(
+                                  color: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  shadows: const [
+                                    BoxShadow(
+                                      color: Color(0x19000000),
+                                      blurRadius: 22,
+                                      offset: Offset(-12, 10),
+                                      spreadRadius: 0,
+                                    ),
+                                  ],
+                                ),
+                                child: Image.asset(
+                                  book.coverUrl,
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                              Text(
-                                book.author,
-                                style: const TextStyle(
-                                  color: Color(0xFF191714),
-                                  fontSize: 14,
-                                  fontFamily: AppTextStyles.albraGroteskFontFamily,
-                                  fontWeight: FontWeight.w400,
-                                ),
+                              const SizedBox(height: 14),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    book.title,
+                                    style: const TextStyle(
+                                      color: Color(0xFF191714),
+                                      fontSize: 16,
+                                      fontFamily: AppTextStyles.albraFontFamily,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    book.author,
+                                    style: const TextStyle(
+                                      color: Color(0xFF191714),
+                                      fontSize: 14,
+                                      fontFamily:
+                                          AppTextStyles.albraGroteskFontFamily,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
+                        ),
+                      );
+                    }).toList(),
               ),
             ),
             const SizedBox(height: 24),
@@ -340,3 +379,4 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 }
+

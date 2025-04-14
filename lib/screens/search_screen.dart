@@ -17,10 +17,10 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   // List of books to search through
   final List<Book> searchResults = [
-    Book(title: 'Sorcerer’s Stone', author: 'J.K Rowling', genre: 'Fantasy', coverUrl: 'images/book1.png'),
-    Book(title: 'Chamber of Secrets', author: 'J.K Rowling', genre: 'Fantasy', coverUrl: 'images/book2.png'),
-    Book(title: 'Moby Dick', author: 'Herman Melville', genre: 'Drama', coverUrl: 'images/book3.png'),
-    Book(title: 'The Big Sleep', author: 'Raymond Chandler', genre: 'Detective', coverUrl: 'images/book4.png'),
+    // Book(title: 'Sorcerer’s Stone', author: 'J.K Rowling', genre: 'Fantasy', coverUrl: 'images/book1.png'),
+    // Book(title: 'Chamber of Secrets', author: 'J.K Rowling', genre: 'Fantasy', coverUrl: 'images/book2.png'),
+    // Book(title: 'Moby Dick', author: 'Herman Melville', genre: 'Drama', coverUrl: 'images/book3.png'),
+    // Book(title: 'The Big Sleep', author: 'Raymond Chandler', genre: 'Detective', coverUrl: 'images/book4.png'),
   ];
   List<Book> _filteredResults = [];
 
@@ -45,10 +45,11 @@ class _SearchScreenState extends State<SearchScreen> {
       if (query.isEmpty) {
         _filteredResults = searchResults;
       } else {
-        _filteredResults = searchResults.where((book) {
-          return book.title.toLowerCase().contains(query) ||
-              book.author.toLowerCase().contains(query);
-        }).toList();
+        _filteredResults =
+            searchResults.where((book) {
+              return book.title.toLowerCase().contains(query) ||
+                  book.author.toLowerCase().contains(query);
+            }).toList();
       }
     });
   }
@@ -65,7 +66,10 @@ class _SearchScreenState extends State<SearchScreen> {
             children: [
               // Header with back button, title, and filter icon
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 20,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -77,10 +81,15 @@ class _SearchScreenState extends State<SearchScreen> {
                         decoration: const ShapeDecoration(
                           color: Color(0xFF191714),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(100)),
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(100),
+                            ),
                           ),
                         ),
-                        child: const Icon(Icons.arrow_back, color: Colors.white),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                     const Text(
@@ -124,7 +133,10 @@ class _SearchScreenState extends State<SearchScreen> {
                     // Search bar
                     Container(
                       width: 335,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
                       decoration: const ShapeDecoration(
                         color: Color(0xFFF5F5FA),
                         shape: RoundedRectangleBorder(
@@ -172,11 +184,16 @@ class _SearchScreenState extends State<SearchScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _buildBookRow(Book(
+                      _buildBookRow(
+                        Book(
                           title: 'Moby Dick',
                           author: 'Herman Melville',
                           genre: 'Drama',
-                          coverUrl: 'images/book1.png')),
+                          coverUrl: 'images/book1.png',
+                          description: 'descr',
+                          fileName: 'filename',
+                        ),
+                      ),
                     ] else ...[
                       const Text(
                         'Search results',
@@ -202,7 +219,9 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                         )
                       else
-                        ..._filteredResults.map((book) => _buildBookRow(book)).toList(),
+                        ..._filteredResults
+                            .map((book) => _buildBookRow(book))
+                            .toList(),
                     ],
                   ],
                 ),
@@ -279,10 +298,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                 ],
               ),
-              child: Image.asset(
-                book.coverUrl,
-                fit: BoxFit.cover,
-              ),
+              child: Image.asset(book.coverUrl, fit: BoxFit.cover),
             ),
             const SizedBox(width: 14),
             Column(
@@ -314,3 +330,4 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 }
+

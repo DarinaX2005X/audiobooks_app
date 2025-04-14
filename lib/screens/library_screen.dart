@@ -15,11 +15,11 @@ class LibraryScreen extends StatefulWidget {
 class _LibraryScreenState extends State<LibraryScreen> {
   // List of saved books
   final List<Book> savedBooks = [
-    Book(title: 'The Black Witch', author: 'Laurie Forest', genre: 'Fantasy', coverUrl: 'images/book1.png'),
-    Book(title: 'A Promised Land', author: 'Barrack Obama', genre: 'Non-Fiction', coverUrl: 'images/book2.png'),
-    Book(title: 'Harry Potter and the Prisoner of Azkaban', author: 'J.K. Rowling', genre: 'Fantasy', coverUrl: 'images/book3.png'),
-    Book(title: 'The Kidnapper’s Accomplice', author: 'C. J. Archer', genre: 'Mystery', coverUrl: 'images/book4.png'),
-    Book(title: 'Light Mage', author: 'Author Name', genre: 'Fantasy', coverUrl: 'images/book5.png'),
+    // Book(title: 'The Black Witch', author: 'Laurie Forest', genre: 'Fantasy', coverUrl: 'images/book1.png'),
+    // Book(title: 'A Promised Land', author: 'Barrack Obama', genre: 'Non-Fiction', coverUrl: 'images/book2.png'),
+    // Book(title: 'Harry Potter and the Prisoner of Azkaban', author: 'J.K. Rowling', genre: 'Fantasy', coverUrl: 'images/book3.png'),
+    // Book(title: 'The Kidnapper’s Accomplice', author: 'C. J. Archer', genre: 'Mystery', coverUrl: 'images/book4.png'),
+    // Book(title: 'Light Mage', author: 'Author Name', genre: 'Fantasy', coverUrl: 'images/book5.png'),
   ];
 
   // Controller for the search bar
@@ -46,10 +46,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
       if (query.isEmpty) {
         _filteredBooks = savedBooks;
       } else {
-        _filteredBooks = savedBooks.where((book) {
-          return book.title.toLowerCase().contains(query) ||
-              book.author.toLowerCase().contains(query);
-        }).toList();
+        _filteredBooks =
+            savedBooks.where((book) {
+              return book.title.toLowerCase().contains(query) ||
+                  book.author.toLowerCase().contains(query);
+            }).toList();
       }
     });
   }
@@ -123,7 +124,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   const SizedBox(height: 12),
                   Container(
                     width: 335,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
                     decoration: const ShapeDecoration(
                       color: Color(0xFFF5F5FA),
                       shape: RoundedRectangleBorder(
@@ -150,87 +154,97 @@ class _LibraryScreenState extends State<LibraryScreen> {
             ),
             // Scrollable list of filtered books using ListView.builder for efficiency
             Expanded(
-              child: _filteredBooks.isEmpty
-                  ? const Center(
-                child: Text(
-                  'No books found',
-                  style: TextStyle(
-                    color: Color(0xFF191714),
-                    fontSize: 16,
-                    fontFamily: AppTextStyles.albraGroteskFontFamily,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              )
-                  : ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: _filteredBooks.length,
-                itemBuilder: (context, index) {
-                  final book = _filteredBooks[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => DetailsScreen(book: book)),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: const ShapeDecoration(
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(12)),
+              child:
+                  _filteredBooks.isEmpty
+                      ? const Center(
+                        child: Text(
+                          'No books found',
+                          style: TextStyle(
+                            color: Color(0xFF191714),
+                            fontSize: 16,
+                            fontFamily: AppTextStyles.albraGroteskFontFamily,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 80,
-                              height: 80,
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image: AssetImage(book.coverUrl),
-                                  fit: BoxFit.cover,
+                      )
+                      : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        itemCount: _filteredBooks.length,
+                        itemBuilder: (context, index) {
+                          final book = _filteredBooks[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => DetailsScreen(book: book),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: const ShapeDecoration(
+                                  color: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 80,
+                                      height: 80,
+                                      decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                          image: AssetImage(book.coverUrl),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            book.title,
+                                            style: const TextStyle(
+                                              color: Color(0xFF010103),
+                                              fontSize: 16,
+                                              fontFamily:
+                                                  AppTextStyles.albraFontFamily,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            book.author,
+                                            style: const TextStyle(
+                                              color: Color(0xFF191815),
+                                              fontSize: 14,
+                                              fontFamily:
+                                                  AppTextStyles
+                                                      .albraGroteskFontFamily,
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    book.title,
-                                    style: const TextStyle(
-                                      color: Color(0xFF010103),
-                                      fontSize: 16,
-                                      fontFamily: AppTextStyles.albraFontFamily,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Text(
-                                    book.author,
-                                    style: const TextStyle(
-                                      color: Color(0xFF191815),
-                                      fontSize: 14,
-                                      fontFamily: AppTextStyles.albraGroteskFontFamily,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    ),
-                  );
-                },
-              ),
             ),
           ],
         ),
@@ -238,3 +252,4 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 }
+

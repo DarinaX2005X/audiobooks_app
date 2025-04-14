@@ -44,11 +44,13 @@ class MyApp extends StatelessWidget {
         '/personalize': (context) => const PersonalizeScreen(),
         '/main': (context) => const MainScreen(),
         '/forget_password': (context) => const ForgetPasswordScreen(),
-        '/details': (context) => DetailsScreen(
-          book: ModalRoute.of(context)!.settings.arguments as Book,
-        ),
+        '/details':
+            (context) => DetailsScreen(
+              book: ModalRoute.of(context)!.settings.arguments as Book,
+            ),
         '/text': (context) => const TextScreen(),
       },
     );
   }
 }
+
