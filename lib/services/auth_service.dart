@@ -4,7 +4,7 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 
 class AuthService {
-  static const String baseUrl = 'http://localhost:3000/api';
+  static const String baseUrl = 'http://37.151.246.104:3000/api';
   static final Dio _dio = Dio(BaseOptions(baseUrl: baseUrl));
   static final CookieJar _cookieJar = CookieJar();
 
@@ -16,16 +16,13 @@ class AuthService {
     try {
       final response = await _dio.post(
         '/auth/login',
-        data: jsonEncode({
-          'login': email,
-          'password': password,
-        }),
-        options: Options(headers: {
-          'Content-Type': 'application/json',
-        }),
+        data: jsonEncode({'login': email, 'password': password}),
+        options: Options(headers: {'Content-Type': 'application/json'}),
       );
 
-      print('🍪 Cookies after login: ${await _cookieJar.loadForRequest(Uri.parse(baseUrl))}');
+      print(
+        '🍪 Cookies after login: ${await _cookieJar.loadForRequest(Uri.parse(baseUrl))}',
+      );
       return response.statusCode == 200;
     } catch (e) {
       print('⚠️ Login error: $e');
@@ -33,7 +30,11 @@ class AuthService {
     }
   }
 
-  static Future<Map<String, dynamic>> register(String username, String email, String password) async {
+  static Future<Map<String, dynamic>> register(
+    String username,
+    String email,
+    String password,
+  ) async {
     try {
       final response = await _dio.post(
         '/auth/register',
@@ -42,9 +43,7 @@ class AuthService {
           'email': email,
           'password': password,
         }),
-        options: Options(headers: {
-          'Content-Type': 'application/json',
-        }),
+        options: Options(headers: {'Content-Type': 'application/json'}),
       );
 
       return {
@@ -79,5 +78,5 @@ class AuthService {
     return await _dio.get(endpoint);
   }
 
-static Dio get dioInstance => _dio;
+  static Dio get dioInstance => _dio;
 }
