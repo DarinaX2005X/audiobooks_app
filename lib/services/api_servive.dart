@@ -9,13 +9,28 @@ class ApiService {
   static Future<List<Book>> fetchBooks() async {
     try {
       print('📚 Fetching books from /books');
-
       final response = await _dio.get('/books');
-
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
+
+        // Debug the raw data
+        print(
+          '📖 Raw book data (first item): ${data.isNotEmpty ? data[0] : "No data"}',
+        );
+
         final books = data.map((json) => Book.fromJson(json)).toList();
         print('✅ Parsed ${books.length} books');
+
+        // Debug the parsed books
+        if (books.isNotEmpty) {
+          final Book firstBook = books[0];
+          print('📗 First book details:');
+          print(' - Title: ${firstBook.title}');
+          print(' - Author: ${firstBook.author}');
+          print(' - Genre: ${firstBook.genre}');
+          print(' - CoverUrl: ${firstBook.coverUrl}');
+        }
+
         return books;
       } else {
         print('❌ Error response: ${response.statusCode}');

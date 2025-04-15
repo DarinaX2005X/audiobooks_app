@@ -27,13 +27,13 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    _loadData(); // Load both books and categories
     _screens = [
       _buildMainContent(),
       SearchScreen(onBack: () => setState(() => _selectedIndex = 0)),
       LibraryScreen(onBack: () => setState(() => _selectedIndex = 0)),
       ProfileScreen(onBack: () => setState(() => _selectedIndex = 0)),
     ];
-    _loadData(); // Load both books and categories
   }
 
   Future<void> _loadData() async {
@@ -60,6 +60,7 @@ class _MainScreenState extends State<MainScreen> {
 
         // Set loading to false
         isLoading = false;
+        print('isLoading state after data fetch: $isLoading');
       });
 
       print(
@@ -80,185 +81,241 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  Widget _buildMainContent() {
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.only(top: 20),
-              decoration: const BoxDecoration(color: Color(0xFFF1EEE3)),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // User header section
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 48,
-                                height: 48,
-                                decoration: const ShapeDecoration(
-                                  image: DecorationImage(
-                                    image: AssetImage("images/user.png"),
-                                    fit: BoxFit.fill,
+ // Fix for the _buildMainContent method
+Widget _buildMainContent() {
+  return RefreshIndicator(
+    onRefresh: _loadData,
+    child: SingleChildScrollView(
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.only(top: 20),
+            decoration: const BoxDecoration(color: Color(0xFFF1EEE3)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // User header section
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: const ShapeDecoration(
+                                image: DecorationImage(
+                                  image: AssetImage("images/user.png"),
+                                  fit: BoxFit.fill,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(100),
                                   ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(100),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Flexible(
+                              child: Text.rich(
+                                TextSpan(
+                                  children: [
+                                    const TextSpan(
+                                      text: 'Hey, ',
+                                      style: TextStyle(
+                                        color: Color(0xFF272A34),
+                                        fontSize: 24,
+                                        fontFamily:
+                                            AppTextStyles.albraFontFamily,
+                                        fontWeight: FontWeight.w500,
+                                        height: 1.60,
+                                      ),
                                     ),
-                                  ),
+                                    TextSpan(
+                                      text: 'John!\n',
+                                      style: TextStyle(
+                                        color: AppColors.accentRed,
+                                        fontSize: 24,
+                                        fontFamily:
+                                            AppTextStyles.albraFontFamily,
+                                        fontWeight: FontWeight.w500,
+                                        height: 1.60,
+                                      ),
+                                    ),
+                                    const TextSpan(
+                                      text: 'What will you listen today?',
+                                      style: TextStyle(
+                                        color: Color(0xFF272A34),
+                                        fontSize: 24,
+                                        fontFamily:
+                                            AppTextStyles.albraFontFamily,
+                                        fontWeight: FontWeight.w500,
+                                        height: 1.60,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Flexible(
-                                child: Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      const TextSpan(
-                                        text: 'Hey, ',
-                                        style: TextStyle(
-                                          color: Color(0xFF272A34),
-                                          fontSize: 24,
-                                          fontFamily:
-                                              AppTextStyles.albraFontFamily,
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.60,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text: 'John!\n',
-                                        style: TextStyle(
-                                          color: AppColors.accentRed,
-                                          fontSize: 24,
-                                          fontFamily:
-                                              AppTextStyles.albraFontFamily,
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.60,
-                                        ),
-                                      ),
-                                      const TextSpan(
-                                        text: 'What will you listen today?',
-                                        style: TextStyle(
-                                          color: Color(0xFF272A34),
-                                          fontSize: 24,
-                                          fontFamily:
-                                              AppTextStyles.albraFontFamily,
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.60,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: const ShapeDecoration(
+                          color: Color(0xFF191714),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(100),
+                            ),
                           ),
                         ),
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: const ShapeDecoration(
-                            color: Color(0xFF191714),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(100),
+                        child: const Icon(
+                          Icons.notifications,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Categories section
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: categories.map((category) {
+                        bool isSelected = selectedCategory == category;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                selectedCategory = category;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 14,
+                              ),
+                              decoration: ShapeDecoration(
+                                color: isSelected
+                                    ? const Color(0xFF191714)
+                                    : const Color(0xFFE6DFCA),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    100,
+                                  ),
+                                ),
+                              ),
+                              child: Text(
+                                category,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? const Color(0xFFF1EEE3)
+                                      : const Color(0xFF191714),
+                                  fontSize: 14,
+                                  fontFamily:
+                                      AppTextStyles.albraGroteskFontFamily,
+                                  fontWeight: FontWeight.w400,
+                                ),
                               ),
                             ),
                           ),
-                          child: const Icon(
-                            Icons.notifications,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
+                        );
+                      }).toList(),
                     ),
-                    const SizedBox(height: 24),
+                  ),
+                  const SizedBox(height: 24),
 
-                    // Categories section
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children:
-                            categories.map((category) {
-                              bool isSelected = selectedCategory == category;
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      selectedCategory = category;
-                                    });
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 14,
-                                    ),
-                                    decoration: ShapeDecoration(
-                                      color:
-                                          isSelected
-                                              ? const Color(0xFF191714)
-                                              : const Color(0xFFE6DFCA),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          100,
-                                        ),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      category,
-                                      style: TextStyle(
-                                        color:
-                                            isSelected
-                                                ? const Color(0xFFF1EEE3)
-                                                : const Color(0xFF191714),
-                                        fontSize: 14,
-                                        fontFamily:
-                                            AppTextStyles
-                                                .albraGroteskFontFamily,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+                  // Display loading indicator or content based on state
+                  if (isLoading)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: CircularProgressIndicator(),
                       ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Display loading indicator if loading
-                    if (isLoading)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(20.0),
-                          child: CircularProgressIndicator(),
-                        ),
-                      )
-                    else if (books.isEmpty)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(20.0),
-                          child: Text('No books available'),
-                        ),
-                      )
-                    else
-                      ..._buildBookSections(),
-                  ],
-                ),
+                    )
+                  else if (books.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Text('No books available'),
+                      ),
+                    )
+                  else
+                    ..._buildBookSections(),  // Spread operator for list of widgets
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
+    ),
+  );
+}
+  Widget _buildBookCover(Book book) {
+    // Safely handle the coverUrl
+    final String coverUrl = book.coverUrl ?? '';
+
+    if (coverUrl.isEmpty) {
+      return Container(
+        color: Colors.grey.shade200,
+        child: const Icon(Icons.book, size: 50),
+      );
+    }
+
+    try {
+      if (coverUrl.startsWith('http')) {
+        return Image.network(
+          coverUrl,
+          fit: BoxFit.cover,
+          // Show a placeholder while loading
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Center(
+              child: CircularProgressIndicator(
+                value:
+                    loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                        : null,
+              ),
+            );
+          },
+          // Handle error gracefully
+          errorBuilder: (context, error, stackTrace) {
+            print('Error loading image: $error');
+            return Container(
+              color: Colors.grey.shade200,
+              child: const Icon(Icons.image_not_supported, size: 50),
+            );
+          },
+        );
+      } else {
+        return Image.asset(
+          coverUrl,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            print('Error loading asset image: $error');
+            return Container(
+              color: Colors.grey.shade200,
+              child: const Icon(Icons.book, size: 50),
+            );
+          },
+        );
+      }
+    } catch (e) {
+      print('Exception rendering cover: $e');
+      return Container(
+        color: Colors.grey.shade200,
+        child: const Icon(Icons.error, size: 50),
+      );
+    }
   }
 
   List<Widget> _buildBookSections() {
@@ -266,7 +323,7 @@ class _MainScreenState extends State<MainScreen> {
       'Building book sections with ${books.length} books, selectedCategory: $selectedCategory',
     );
 
-    // If we have no books, show a message (though this should be caught earlier)
+    // If we have no books, show a message
     if (books.isEmpty) {
       return [
         const Center(
@@ -282,11 +339,19 @@ class _MainScreenState extends State<MainScreen> {
     Map<String, List<Book>> booksByGenre = {};
 
     for (var book in books) {
+      // Debug each book
+      print('Processing book: ${book.title}, Genre: ${book.genre}');
+
       // Only filter books if 'All' is not selected
       if (selectedCategory == 'All' || book.genre == selectedCategory) {
+        // Handle null or empty genre
+        final genre = book.genre.isNotEmpty ? book.genre : 'Uncategorized';
+
         // Use putIfAbsent to create a new list if genre key doesn't exist
-        booksByGenre.putIfAbsent(book.genre, () => []).add(book);
+        booksByGenre.putIfAbsent(genre, () => []).add(book);
       }
+print('Number of genres after filtering: ${booksByGenre.length}');
+print('Total books after filtering: ${booksByGenre.values.expand((i) => i).length}');
     }
 
     print('Grouped books by genre: ${booksByGenre.keys.toList()}');
@@ -373,56 +438,7 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
-                                  child:
-                                      book.coverUrl.isNotEmpty
-                                          ? book.coverUrl.startsWith('http')
-                                              ? Image.network(
-                                                book.coverUrl,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (
-                                                  context,
-                                                  error,
-                                                  stackTrace,
-                                                ) {
-                                                  print(
-                                                    'Error loading image: $error',
-                                                  );
-                                                  return Container(
-                                                    color: Colors.grey.shade200,
-                                                    child: const Icon(
-                                                      Icons.book,
-                                                      size: 50,
-                                                    ),
-                                                  );
-                                                },
-                                              )
-                                              : Image.asset(
-                                                book.coverUrl,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (
-                                                  context,
-                                                  error,
-                                                  stackTrace,
-                                                ) {
-                                                  print(
-                                                    'Error loading asset image: $error',
-                                                  );
-                                                  return Container(
-                                                    color: Colors.grey.shade200,
-                                                    child: const Icon(
-                                                      Icons.book,
-                                                      size: 50,
-                                                    ),
-                                                  );
-                                                },
-                                              )
-                                          : Container(
-                                            color: Colors.grey.shade200,
-                                            child: const Icon(
-                                              Icons.book,
-                                              size: 50,
-                                            ),
-                                          ),
+                                  child: _buildBookCover(book),
                                 ),
                               ),
                               const SizedBox(height: 14),
@@ -478,8 +494,28 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Dynamically build the screen based on selected index
+    Widget currentScreen;
+    
+    switch (_selectedIndex) {
+      case 0:
+        currentScreen = _buildMainContent();
+        break;
+      case 1:
+        currentScreen = SearchScreen(onBack: () => setState(() => _selectedIndex = 0));
+        break;
+      case 2:
+        currentScreen = LibraryScreen(onBack: () => setState(() => _selectedIndex = 0));
+        break;
+      case 3:
+        currentScreen = ProfileScreen(onBack: () => setState(() => _selectedIndex = 0));
+        break;
+      default:
+        currentScreen = _buildMainContent();
+    }
+
     return Scaffold(
-      body: _screens[_selectedIndex],
+      body: currentScreen,
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(13),
         decoration: const ShapeDecoration(

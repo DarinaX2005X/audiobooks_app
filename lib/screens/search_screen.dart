@@ -36,6 +36,47 @@ class _SearchScreenState extends State<SearchScreen> {
     _searchController.dispose();
     super.dispose();
   }
+    Widget _buildBookCover(Book book) {
+  if (book.coverUrl == null || book.coverUrl!.isEmpty) {
+    return Container(
+      color: Colors.grey.shade200,
+      child: const Icon(Icons.book, size: 50),
+    );
+  }
+  
+  try {
+    if (book.coverUrl!.startsWith('http')) {
+      // Network image
+      return Image.network(
+        book.coverUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey.shade200,
+            child: const Icon(Icons.book, size: 50),
+          );
+        },
+      );
+    } else {
+      // Asset image
+      return Image.asset(
+        book.coverUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey.shade200,
+            child: const Icon(Icons.book, size: 50),
+          );
+        },
+      );
+    }
+  } catch (e) {
+    return Container(
+      color: Colors.grey.shade200,
+      child: const Icon(Icons.error, size: 50),
+    );
+  }
+}
 
   // Filters search results based on the search query
   void _filterResults() {
@@ -269,65 +310,67 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   // Builds a row for displaying a book
-  Widget _buildBookRow(Book book) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => DetailsScreen(book: book)),
-          );
-        },
-        child: Row(
-          children: [
-            Container(
-              width: 160,
-              height: 235,
-              decoration: const ShapeDecoration(
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
-                ),
-                shadows: [
-                  BoxShadow(
-                    color: Color(0x19000000),
-                    blurRadius: 22,
-                    offset: Offset(-12, 10),
-                    spreadRadius: 0,
-                  ),
-                ],
+ Widget _buildBookRow(Book book) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 15),
+    child: GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DetailsScreen(book: book)),
+        );
+      },
+      child: Row(
+        children: [
+          Container(
+            width: 160,
+            height: 235,
+            decoration: const ShapeDecoration(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
               ),
-              child: Image.asset(book.coverUrl, fit: BoxFit.cover),
-            ),
-            const SizedBox(width: 14),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  book.title,
-                  style: const TextStyle(
-                    color: Color(0xFF191714),
-                    fontSize: 16,
-                    fontFamily: AppTextStyles.albraFontFamily,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  book.author,
-                  style: const TextStyle(
-                    color: Color(0xFF191714),
-                    fontSize: 14,
-                    fontFamily: AppTextStyles.albraGroteskFontFamily,
-                    fontWeight: FontWeight.w400,
-                  ),
+              shadows: [
+                BoxShadow(
+                  color: Color(0x19000000),
+                  blurRadius: 22,
+                  offset: Offset(-12, 10),
+                  spreadRadius: 0,
                 ),
               ],
             ),
-          ],
-        ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: _buildBookCover(book),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                book.title,
+                style: const TextStyle(
+                  color: Color(0xFF191714),
+                  fontSize: 16,
+                  fontFamily: AppTextStyles.albraFontFamily,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                book.author,
+                style: const TextStyle(
+                  color: Color(0xFF191714),
+                  fontSize: 14,
+                  fontFamily: AppTextStyles.albraGroteskFontFamily,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }
-
+}

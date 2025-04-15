@@ -16,6 +16,47 @@ class _DetailsScreenState extends State<DetailsScreen> {
   bool _isPlaying = false;
   double _progressValue = 0.0;
 
+Widget _buildBookCover() {
+  if (widget.book.coverUrl == null || widget.book.coverUrl!.isEmpty) {
+    return Container(
+      color: Colors.grey.shade200,
+      child: const Icon(Icons.book, size: 50),
+    );
+  }
+  
+  try {
+    if (widget.book.coverUrl!.startsWith('http')) {
+      // Network image
+      return Image.network(
+        widget.book.coverUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey.shade200,
+            child: const Icon(Icons.book, size: 50),
+          );
+        },
+      );
+    } else {
+      // Asset image
+      return Image.asset(
+        widget.book.coverUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey.shade200,
+            child: const Icon(Icons.book, size: 50),
+          );
+        },
+      );
+    }
+  } catch (e) {
+    return Container(
+      color: Colors.grey.shade200,
+      child: const Icon(Icons.error, size: 50),
+    );
+  }
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,10 +136,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         ),
                       ],
                     ),
-                    child: Image.asset(
-                      widget.book.coverUrl,
-                      fit: BoxFit.cover,
-                    ),
+                  child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                        child: _buildBookCover(),
+                      ),
                   ),
                   const SizedBox(height: 55),
                   Row(
