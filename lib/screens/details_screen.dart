@@ -12,55 +12,92 @@ class DetailsScreen extends StatefulWidget {
   State<DetailsScreen> createState() => _DetailsScreenState();
 }
 
-class _DetailsScreenState extends State<DetailsScreen> {
+class _DetailsScreenState extends State<DetailsScreen>
+    with SingleTickerProviderStateMixin {
   bool _isPlaying = false;
   double _progressValue = 0.0;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _pulseAnimation;
 
-Widget _buildBookCover() {
-  if (widget.book.coverUrl == null || widget.book.coverUrl!.isEmpty) {
-    return Container(
-      color: Colors.grey.shade200,
-      child: const Icon(Icons.book, size: 50),
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+    
+    _pulseAnimation = TweenSequence<double>(
+      [
+        TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.1), 
+        TweenSequenceItem(tween: Tween<double>(begin: 1.1, end: 1.0)),
+      ],
+    ).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
     );
   }
-  
-  try {
-    if (widget.book.coverUrl!.startsWith('http')) {
-      // Network image
-      return Image.network(
-        widget.book.coverUrl!,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey.shade200,
-            child: const Icon(Icons.book, size: 50),
-          );
-        },
-      );
-    } else {
-      // Asset image
-      return Image.asset(
-        widget.book.coverUrl!,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey.shade200,
-            child: const Icon(Icons.book, size: 50),
-          );
-        },
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildBookCover() {
+    if (widget.book.coverUrl == null || widget.book.coverUrl!.isEmpty) {
+      return Container(
+        color: Colors.grey.shade200,
+        child: const Icon(Icons.book, size: 50),
       );
     }
-  } catch (e) {
-    return Container(
-      color: Colors.grey.shade200,
-      child: const Icon(Icons.error, size: 50),
-    );
+    
+    try {
+      if (widget.book.coverUrl!.startsWith('http')) {
+        return Image.network(
+          widget.book.coverUrl!,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: Colors.grey.shade200,
+              child: const Icon(Icons.book, size: 50),
+            );
+          },
+        );
+      } else {
+        return Image.asset(
+          widget.book.coverUrl!,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: Colors.grey.shade200,
+              child: const Icon(Icons.error, size: 50),
+            );
+          },
+        );
+      }
+    } catch (e) {
+      return Container(
+        color: Colors.grey.shade200,
+        child: const Icon(Icons.error, size: 50),
+      );
+    }
   }
-}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightBackground, // Ensure consistent background
+      backgroundColor: AppColors.lightBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -71,9 +108,7 @@ Widget _buildBookCover() {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
+                      onTap: () => Navigator.pop(context),
                       child: Container(
                         width: 48,
                         height: 48,
@@ -136,10 +171,10 @@ Widget _buildBookCover() {
                         ),
                       ],
                     ),
-                  child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                        child: _buildBookCover(),
-                      ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: _buildBookCover(),
+                    ),
                   ),
                   const SizedBox(height: 55),
                   Row(
@@ -276,7 +311,9 @@ Widget _buildBookCover() {
                               const Icon(Icons.skip_previous, color: Colors.white),
                               const SizedBox(width: 18),
                               GestureDetector(
-                                onTap: () {
+                                onTapDown: (_) => _animationController.forward(),
+                                onTapUp: (_) {
+                                  _animationController.reverse();
                                   setState(() {
                                     _isPlaying = !_isPlaying;
                                     if (_isPlaying) {
@@ -284,17 +321,35 @@ Widget _buildBookCover() {
                                     }
                                   });
                                 },
-                                child: Container(
-                                  width: 53,
-                                  height: 53,
-                                  decoration: const ShapeDecoration(
-                                    color: AppColors.buttonRed,
-                                    shape: OvalBorder(),
-                                  ),
-                                  child: Icon(
-                                    _isPlaying ? Icons.pause : Icons.play_arrow,
-                                    color: Colors.white,
-                                  ),
+                                onTapCancel: () => _animationController.reverse(),
+                                child: AnimatedBuilder(
+                                  animation: _animationController,
+                                  builder: (context, child) {
+                                    return Transform.scale(
+                                      scale: _isPlaying
+                                          ? _pulseAnimation.value
+                                          : _scaleAnimation.value,
+                                      child: Container(
+                                        width: 53,
+                                        height: 53,
+                                        decoration: const ShapeDecoration(
+                                          color: AppColors.buttonRed,
+                                          shape: OvalBorder(),
+                                          shadows: [
+                                            BoxShadow(
+                                              color: Colors.black26,
+                                              blurRadius: 10,
+                                              spreadRadius: 2,
+                                            ),
+                                          ],
+                                        ),
+                                        child: Icon(
+                                          _isPlaying ? Icons.pause : Icons.play_arrow,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                               const SizedBox(width: 18),
