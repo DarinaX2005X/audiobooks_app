@@ -36,8 +36,14 @@ class _DetailsScreenState extends State<DetailsScreen>
     );
     
     _pulseAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.1), weight: 1.0),
-      TweenSequenceItem(tween: Tween<double>(begin: 1.1, end: 1.0), weight: 1.0),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.1),
+        weight: 1.0,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.1, end: 1.0),
+        weight: 1.0,
+      ),
     ]).animate(
       CurvedAnimation(
         parent: _animationController,
@@ -118,6 +124,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                         ),
                         child: const Icon(Icons.arrow_back, color: Colors.white),
                       ),
+                    ),
                     const Text(
                       'Details',
                       style: TextStyle(
