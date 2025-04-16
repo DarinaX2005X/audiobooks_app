@@ -126,7 +126,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                       style: TextStyle(
                         color: Color(0xFF191714),
                         fontSize: 16,
-                        fontFamily: AppTextStyles.albraGroteskFontFamily,
+                        fontFamily: 'AlbraGrotesk',
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -189,7 +189,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                             style: TextStyle(
                               color: Color(0xFF191714),
                               fontSize: 14,
-                              fontFamily: AppTextStyles.albraFontFamily,
+                              fontFamily: 'Albra',
                               fontWeight: FontWeight.w400,
                             ),
                           ),
@@ -205,7 +205,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                             style: TextStyle(
                               color: Color(0xFF191714),
                               fontSize: 14,
-                              fontFamily: AppTextStyles.albraFontFamily,
+                              fontFamily: 'Albra',
                               fontWeight: FontWeight.w400,
                             ),
                           ),
@@ -221,7 +221,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                             style: TextStyle(
                               color: Color(0xFF191714),
                               fontSize: 14,
-                              fontFamily: AppTextStyles.albraFontFamily,
+                              fontFamily: 'Albra',
                               fontWeight: FontWeight.w400,
                             ),
                           ),
@@ -235,7 +235,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                     style: const TextStyle(
                       color: Color(0xFF191714),
                       fontSize: 24,
-                      fontFamily: AppTextStyles.albraFontFamily,
+                      fontFamily: 'Albra',
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -244,7 +244,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                     style: const TextStyle(
                       color: Color(0xFF191714),
                       fontSize: 16,
-                      fontFamily: AppTextStyles.albraGroteskFontFamily,
+                      fontFamily: 'AlbraGrotesk',
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -263,7 +263,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                           style: const TextStyle(
                             color: Color(0xFFA4A196),
                             fontSize: 12,
-                            fontFamily: AppTextStyles.albraGroteskFontFamily,
+                            fontFamily: 'AlbraGrotesk',
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -284,7 +284,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                           style: TextStyle(
                             color: Color(0xFF191714),
                             fontSize: 12,
-                            fontFamily: AppTextStyles.albraGroteskFontFamily,
+                            fontFamily: 'AlbraGrotesk',
                             fontWeight: FontWeight.w400,
                           ),
                         ),
