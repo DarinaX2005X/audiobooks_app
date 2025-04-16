@@ -315,6 +315,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                               const Icon(Icons.skip_previous, color: Colors.white),
                               const SizedBox(width: 18),
                               GestureDetector(
+                                behavior: HitTestBehavior.opaque,
                                 onTapDown: (_) => _animationController.forward(),
                                 onTapUp: (_) {
                                   _animationController.reverse();
