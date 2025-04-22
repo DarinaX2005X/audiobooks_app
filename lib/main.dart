@@ -109,6 +109,7 @@ class _AppNavigatorState extends State<AppNavigator> {
           ),
         ),
         child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
           currentIndex: _currentIndex,
           onTap: _onItemTapped,
           backgroundColor: Colors.transparent,
