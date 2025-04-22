@@ -204,15 +204,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   GestureDetector(
-                    onTap: widget.onBack ?? () => Navigator.pop(context),
+                    onTap: () => Navigator.pushNamed(context, '/main'),
                     child: Container(
                       width: 48,
                       height: 48,
                       decoration: const ShapeDecoration(
                         color: Color(0xFF191714),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(100)),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(100))),
                       ),
                       child: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
@@ -231,9 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     height: 39,
                     decoration: const ShapeDecoration(
                       color: Color(0xFF191714),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(100)),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(100))),
                     ),
                     child: const Center(
                       child: Text(
@@ -261,10 +257,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       image: AssetImage("images/user.png"),
                       fit: BoxFit.fill,
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    )
-                  )
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  ),
                 ),
                 Positioned(
                   right: 0,
@@ -274,22 +268,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     height: 34,
                     decoration: const ShapeDecoration(
                       color: Color(0xFF191714),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(100)),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(100))),
                     ),
-                    child: const Icon(
-                      Icons.edit,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+                    child: const Icon(Icons.edit, color: Colors.white, size: 20),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            
-            // User stats (favorites and in-progress)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 10),
               child: Row(
@@ -301,8 +287,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            
-            // User details
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Column(
@@ -314,8 +298,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 40),
-            
-            // Logout button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: SizedBox(
@@ -325,9 +307,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onPressed: _handleLogout,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red.shade700,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(100),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                   ),
                   child: const Text(
                     'Logout',
@@ -348,7 +328,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Widget for user stats cards (favorites, in-progress)
   Widget _buildStatCard(String title, String value, IconData icon) {
     return Container(
       width: 130,
@@ -357,20 +336,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2)),
         ],
       ),
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: AppColors.accentRed,
-            size: 28,
-          ),
+          Icon(icon, color: AppColors.accentRed, size: 28),
           const SizedBox(height: 8),
           Text(
             value,
@@ -403,17 +374,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           SizedBox(
             width: 120,
-            child: Text(
-              label,
-              style: AppTextStyles.labelStyle,
-            ),
+            child: Text(label, style: AppTextStyles.labelStyle),
           ),
           SizedBox(
             width: 140,
-            child: Text(
-              value,
-              style: AppTextStyles.valueStyle,
-            ),
+            child: Text(value, style: AppTextStyles.valueStyle),
           ),
         ],
       ),
