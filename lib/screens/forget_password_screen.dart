@@ -18,7 +18,9 @@ class ForgetPasswordScreen extends StatelessWidget {
               // Title for the forget password screen
               Text(
                 'Forget Password',
-                style: AppTextStyles.titleStyle.copyWith(color: const Color(0xFF191714)),
+                style: AppTextStyles.titleStyle.copyWith(
+                  color: const Color(0xFF191714),
+                ),
               ),
               const SizedBox(height: 20),
               // Email input field
@@ -43,11 +45,15 @@ class ForgetPasswordScreen extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Reset link sent to your email!')),
+                    const SnackBar(
+                      content: Text('Reset link sent to your email!'),
+                    ),
                   );
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
