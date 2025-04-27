@@ -58,12 +58,12 @@ class _LoginScreenState extends State<LoginScreen> {
       // If login is successful, navigate to main screen
       if (success) {
         if (!mounted) return;
-        
+
         // If "Remember me" is not checked, we'll still navigate but not store the login status
         if (!_isRemembered) {
           // You might want to handle this case differently based on your app's requirements
         }
-        
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainScreen()),
@@ -100,10 +100,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Title for the login screen
                 Text(
                   'Login',
-                  style: AppTextStyles.titleStyle.copyWith(color: const Color(0xFF191714)),
+                  style: AppTextStyles.titleStyle.copyWith(
+                    color: const Color(0xFF191714),
+                  ),
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Error message display
                 if (_errorMessage != null)
                   Container(
@@ -121,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                
+
                 // Email input field
                 TextField(
                   controller: _emailController,
@@ -142,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                
+
                 // Password input field
                 TextField(
                   controller: _passwordController,
@@ -164,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onSubmitted: (_) => _handleLogin(),
                 ),
                 const SizedBox(height: 10),
-                
+
                 // Remember me checkbox
                 Row(
                   children: [
@@ -189,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Login button
                 SizedBox(
                   width: double.infinity,
@@ -203,29 +205,32 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
+                    child:
+                        _isLoading
+                            ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                            : Text(
+                              'Login',
+                              style: AppTextStyles.buttonTextStyle,
                             ),
-                          )
-                        : Text(
-                            'Login',
-                            style: AppTextStyles.buttonTextStyle,
-                          ),
                   ),
                 ),
                 const SizedBox(height: 10),
-                
+
                 // Register link
                 TextButton(
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const RegisterScreen(),
+                      ),
                     );
                   },
                   child: Text(
@@ -235,13 +240,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                
+
                 // Forget password link
                 TextButton(
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ForgetPasswordScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const ForgetPasswordScreen(),
+                      ),
                     );
                   },
                   child: Text(

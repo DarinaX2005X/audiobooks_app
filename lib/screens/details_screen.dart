@@ -16,57 +16,62 @@ class _DetailsScreenState extends State<DetailsScreen> {
   bool _isPlaying = false;
   double _progressValue = 0.0;
 
-Widget _buildBookCover() {
-  if (widget.book.coverUrl == null || widget.book.coverUrl!.isEmpty) {
-    return Container(
-      color: Colors.grey.shade200,
-      child: const Icon(Icons.book, size: 50),
-    );
-  }
-  
-  try {
-    if (widget.book.coverUrl!.startsWith('http')) {
-      // Network image
-      return Image.network(
-        widget.book.coverUrl!,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey.shade200,
-            child: const Icon(Icons.book, size: 50),
-          );
-        },
-      );
-    } else {
-      // Asset image
-      return Image.asset(
-        widget.book.coverUrl!,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey.shade200,
-            child: const Icon(Icons.book, size: 50),
-          );
-        },
+  Widget _buildBookCover() {
+    if (widget.book.coverUrl == null || widget.book.coverUrl!.isEmpty) {
+      return Container(
+        color: Colors.grey.shade200,
+        child: const Icon(Icons.book, size: 50),
       );
     }
-  } catch (e) {
-    return Container(
-      color: Colors.grey.shade200,
-      child: const Icon(Icons.error, size: 50),
-    );
+
+    try {
+      if (widget.book.coverUrl!.startsWith('http')) {
+        // Network image
+        return Image.network(
+          widget.book.coverUrl!,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: Colors.grey.shade200,
+              child: const Icon(Icons.book, size: 50),
+            );
+          },
+        );
+      } else {
+        // Asset image
+        return Image.asset(
+          widget.book.coverUrl!,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: Colors.grey.shade200,
+              child: const Icon(Icons.book, size: 50),
+            );
+          },
+        );
+      }
+    } catch (e) {
+      return Container(
+        color: Colors.grey.shade200,
+        child: const Icon(Icons.error, size: 50),
+      );
+    }
   }
-}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightBackground, // Ensure consistent background
+      backgroundColor:
+          AppColors.lightBackground, // Ensure consistent background
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 20,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -80,10 +85,15 @@ Widget _buildBookCover() {
                         decoration: const ShapeDecoration(
                           color: Color(0xFF191714),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(100)),
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(100),
+                            ),
                           ),
                         ),
-                        child: const Icon(Icons.arrow_back, color: Colors.white),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                     const Text(
@@ -99,7 +109,9 @@ Widget _buildBookCover() {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const TextScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => const TextScreen(),
+                          ),
                         );
                       },
                       child: Container(
@@ -108,7 +120,9 @@ Widget _buildBookCover() {
                         decoration: const ShapeDecoration(
                           color: Color(0xFF191714),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(100)),
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(100),
+                            ),
                           ),
                         ),
                         child: const Icon(Icons.more_vert, color: Colors.white),
@@ -136,10 +150,10 @@ Widget _buildBookCover() {
                         ),
                       ],
                     ),
-                  child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                        child: _buildBookCover(),
-                      ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: _buildBookCover(),
+                    ),
                   ),
                   const SizedBox(height: 55),
                   Row(
@@ -224,7 +238,9 @@ Widget _buildBookCover() {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          _formatDuration(Duration(seconds: (_progressValue * 60).toInt())),
+                          _formatDuration(
+                            Duration(seconds: (_progressValue * 60).toInt()),
+                          ),
                           style: const TextStyle(
                             color: Color(0xFFA4A196),
                             fontSize: 12,
@@ -273,7 +289,10 @@ Widget _buildBookCover() {
                           const Icon(Icons.replay_10, color: Colors.white),
                           Row(
                             children: [
-                              const Icon(Icons.skip_previous, color: Colors.white),
+                              const Icon(
+                                Icons.skip_previous,
+                                color: Colors.white,
+                              ),
                               const SizedBox(width: 18),
                               GestureDetector(
                                 onTap: () {

@@ -17,7 +17,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   Map<String, dynamic> _userData = {};
-  
+
   // User stats from the API
   int _favoritesCount = 0;
   int _inProgressCount = 0;
@@ -43,11 +43,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _isLoading = false;
           if (result['success']) {
             _userData = result['user'];
-            
+
             // Process additional user data
             _favoritesCount = (_userData['favorites'] as List?)?.length ?? 0;
             _inProgressCount = (_userData['progress'] as List?)?.length ?? 0;
-            
           } else {
             _errorMessage = result['message'];
             // If authentication error, navigate to login
@@ -74,7 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Format date for display
   String _formatDate(String? dateString) {
     if (dateString == null) return 'Not available';
-    
+
     try {
       final date = DateTime.parse(dateString);
       return DateFormat('MMM d, yyyy').format(date);
@@ -109,15 +108,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Call logout
     try {
       final success = await AuthService.logout();
-      
+
       if (!mounted) return;
-      
+
       // Close loading dialog
       Navigator.of(context).pop();
-      
+
       if (success) {
         // Navigate to login screen
-        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/login', (route) => false);
       } else {
         // Show error
         ScaffoldMessenger.of(context).showSnackBar(
@@ -126,10 +127,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      
+
       // Close loading dialog
       Navigator.of(context).pop();
-      
+
       // Show error
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('An error occurred. Please try again.')),
@@ -142,9 +143,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
       body: SafeArea(
-        child: _isLoading 
-            ? const Center(child: CircularProgressIndicator())
-            : _errorMessage != null
+        child:
+            _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _errorMessage != null
                 ? _buildErrorView()
                 : _buildProfileContent(),
       ),
@@ -159,11 +161,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              color: Colors.red,
-              size: 60,
-            ),
+            const Icon(Icons.error_outline, color: Colors.red, size: 60),
             const SizedBox(height: 16),
             Text(
               _errorMessage ?? 'An error occurred',
@@ -263,8 +261,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
-                    )
-                  )
+                    ),
+                  ),
                 ),
                 Positioned(
                   right: 0,
@@ -288,33 +286,81 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
             const SizedBox(height: 20),
-            
+
             // User stats (favorites and in-progress)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildStatCard('Favorites', _favoritesCount.toString(), Icons.favorite),
-                  _buildStatCard('In Progress', _inProgressCount.toString(), Icons.book),
+                  _buildStatCard(
+                    'Favorites',
+                    _favoritesCount.toString(),
+                    Icons.favorite,
+                  ),
+                  _buildStatCard(
+                    'In Progress',
+                    _inProgressCount.toString(),
+                    Icons.book,
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
-            
+
             // User details
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Column(
                 children: [
-                  _buildProfileRow('Username', _userData['username'] ?? 'Not set'),
+                  _buildProfileRow(
+                    'Username',
+                    _userData['username'] ?? 'Not set',
+                  ),
                   _buildProfileRow('Email', _userData['email'] ?? 'Not set'),
-                  _buildProfileRow('Member Since', _formatDate(_userData['createdAt'])),
+                  _buildProfileRow(
+                    'Member Since',
+                    _formatDate(_userData['createdAt']),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 40),
-            
+            const SizedBox(height: 20),
+
+            // Settings button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pushNamed(context, '/settings'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFF292929)
+                            : Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                  ),
+                  child: Text(
+                    'Settings',
+                    style: TextStyle(
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : const Color(0xFF191714),
+                      fontFamily: AppTextStyles.albraGroteskFontFamily,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
             // Logout button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -366,11 +412,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: AppColors.accentRed,
-            size: 28,
-          ),
+          Icon(icon, color: AppColors.accentRed, size: 28),
           const SizedBox(height: 8),
           Text(
             value,
@@ -403,17 +445,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           SizedBox(
             width: 120,
-            child: Text(
-              label,
-              style: AppTextStyles.labelStyle,
-            ),
+            child: Text(label, style: AppTextStyles.labelStyle),
           ),
           SizedBox(
             width: 140,
-            child: Text(
-              value,
-              style: AppTextStyles.valueStyle,
-            ),
+            child: Text(value, style: AppTextStyles.valueStyle),
           ),
         ],
       ),

@@ -55,47 +55,48 @@ class _LibraryScreenState extends State<LibraryScreen> {
     });
   }
 
-Widget _buildBookCover(Book book) {
-  if (book.coverUrl == null || book.coverUrl!.isEmpty) {
-    return Container(
-      color: Colors.grey.shade200,
-      child: const Icon(Icons.book, size: 24),
-    );
-  }
-  
-  try {
-    if (book.coverUrl!.startsWith('http')) {
-      // Network image
-      return Image.network(
-        book.coverUrl!,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey.shade200,
-            child: const Icon(Icons.book, size: 24),
-          );
-        },
-      );
-    } else {
-      // Asset image
-      return Image.asset(
-        book.coverUrl!,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey.shade200,
-            child: const Icon(Icons.book, size: 24),
-          );
-        },
+  Widget _buildBookCover(Book book) {
+    if (book.coverUrl == null || book.coverUrl!.isEmpty) {
+      return Container(
+        color: Colors.grey.shade200,
+        child: const Icon(Icons.book, size: 24),
       );
     }
-  } catch (e) {
-    return Container(
-      color: Colors.grey.shade200,
-      child: const Icon(Icons.error, size: 24),
-    );
+
+    try {
+      if (book.coverUrl!.startsWith('http')) {
+        // Network image
+        return Image.network(
+          book.coverUrl!,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: Colors.grey.shade200,
+              child: const Icon(Icons.book, size: 24),
+            );
+          },
+        );
+      } else {
+        // Asset image
+        return Image.asset(
+          book.coverUrl!,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: Colors.grey.shade200,
+              child: const Icon(Icons.book, size: 24),
+            );
+          },
+        );
+      }
+    } catch (e) {
+      return Container(
+        color: Colors.grey.shade200,
+        child: const Icon(Icons.error, size: 24),
+      );
+    }
   }
-}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -237,17 +238,17 @@ Widget _buildBookCover(Book book) {
                                 ),
                                 child: Row(
                                   children: [
-                                      Container(
-                                        width: 80,
-                                        height: 80,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(8),
-                                          child: _buildBookCover(book),
-                                        ),
+                                    Container(
+                                      width: 80,
+                                      height: 80,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: _buildBookCover(book),
+                                      ),
+                                    ),
                                     const SizedBox(width: 16),
                                     Expanded(
                                       child: Column(
@@ -294,4 +295,3 @@ Widget _buildBookCover(Book book) {
     );
   }
 }
-
