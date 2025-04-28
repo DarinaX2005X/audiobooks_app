@@ -114,20 +114,14 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   List<Widget> _buildBookSections() {
+    final theme = Theme.of(context);
+
     if (books.isEmpty) {
       return [
         Center(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
-            child: Text(
-              'No books available',
-              style: TextStyle(
-                color:
-                    Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : const Color(0xFF191714),
-              ),
-            ),
+            child: Text('No books available', style: theme.textTheme.bodyLarge),
           ),
         ),
       ];
@@ -149,12 +143,7 @@ class _MainScreenState extends State<MainScreen> {
             padding: const EdgeInsets.all(20.0),
             child: Text(
               'No books found in the "$selectedCategory" category',
-              style: TextStyle(
-                color:
-                    Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : const Color(0xFF191714),
-              ),
+              style: theme.textTheme.bodyLarge,
             ),
           ),
         ),
@@ -173,20 +162,15 @@ class _MainScreenState extends State<MainScreen> {
               children: [
                 Text(
                   genre,
-                  style: TextStyle(
-                    color:
-                        Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : const Color(0xFF191714),
-                    fontSize: 18,
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontFamily: AppTextStyles.albraFontFamily,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const Text(
+                Text(
                   'See all',
                   style: TextStyle(
-                    color: Color(0xFFE36166),
+                    color: theme.colorScheme.primary,
                     fontSize: 14,
                     fontFamily: AppTextStyles.albraGroteskFontFamily,
                     fontWeight: FontWeight.w400,
@@ -218,21 +202,15 @@ class _MainScreenState extends State<MainScreen> {
                                 width: 160,
                                 height: 235,
                                 decoration: ShapeDecoration(
-                                  color:
-                                      Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Theme.of(
-                                            context,
-                                          ).colorScheme.surface
-                                          : Colors.white,
+                                  color: theme.colorScheme.surface,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  shadows: const [
+                                  shadows: [
                                     BoxShadow(
-                                      color: Color(0x19000000),
+                                      color: theme.shadowColor.withOpacity(0.1),
                                       blurRadius: 22,
-                                      offset: Offset(-12, 10),
+                                      offset: const Offset(-12, 10),
                                       spreadRadius: 0,
                                     ),
                                   ],
@@ -250,17 +228,12 @@ class _MainScreenState extends State<MainScreen> {
                                     width: 160,
                                     child: Text(
                                       book.title,
-                                      style: TextStyle(
-                                        color:
-                                            Theme.of(context).brightness ==
-                                                    Brightness.dark
-                                                ? Colors.white
-                                                : const Color(0xFF191714),
-                                        fontSize: 16,
-                                        fontFamily:
-                                            AppTextStyles.albraFontFamily,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                            fontFamily:
+                                                AppTextStyles.albraFontFamily,
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
@@ -268,18 +241,17 @@ class _MainScreenState extends State<MainScreen> {
                                     width: 160,
                                     child: Text(
                                       book.author,
-                                      style: TextStyle(
-                                        color:
-                                            Theme.of(context).brightness ==
-                                                    Brightness.dark
-                                                ? Colors.white70
-                                                : const Color(0xFF191714),
-                                        fontSize: 14,
-                                        fontFamily:
-                                            AppTextStyles
-                                                .albraGroteskFontFamily,
-                                        fontWeight: FontWeight.w400,
-                                      ),
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                            fontFamily:
+                                                AppTextStyles
+                                                    .albraGroteskFontFamily,
+                                            fontWeight: FontWeight.w400,
+                                            color: theme
+                                                .colorScheme
+                                                .onBackground
+                                                .withOpacity(0.7),
+                                          ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
@@ -302,6 +274,8 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildMainContent() {
+    final theme = Theme.of(context);
+
     return RefreshIndicator(
       onRefresh: _loadData,
       child: SingleChildScrollView(
@@ -309,9 +283,7 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             Container(
               padding: const EdgeInsets.only(top: 20),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.background,
-              ),
+              decoration: BoxDecoration(color: theme.colorScheme.background),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
@@ -345,44 +317,34 @@ class _MainScreenState extends State<MainScreen> {
                                     children: [
                                       TextSpan(
                                         text: 'Hey, ',
-                                        style: TextStyle(
-                                          color:
-                                              Theme.of(context).brightness ==
-                                                      Brightness.dark
-                                                  ? Colors.white
-                                                  : const Color(0xFF272A34),
-                                          fontSize: 24,
-                                          fontFamily:
-                                              AppTextStyles.albraFontFamily,
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.60,
-                                        ),
+                                        style: theme.textTheme.headlineSmall
+                                            ?.copyWith(
+                                              fontFamily:
+                                                  AppTextStyles.albraFontFamily,
+                                              fontWeight: FontWeight.w500,
+                                              height: 1.60,
+                                            ),
                                       ),
                                       TextSpan(
                                         text: 'John!\n',
-                                        style: TextStyle(
-                                          color: AppColors.accentRed,
-                                          fontSize: 24,
-                                          fontFamily:
-                                              AppTextStyles.albraFontFamily,
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.60,
-                                        ),
+                                        style: theme.textTheme.headlineSmall
+                                            ?.copyWith(
+                                              color: theme.colorScheme.primary,
+                                              fontFamily:
+                                                  AppTextStyles.albraFontFamily,
+                                              fontWeight: FontWeight.w500,
+                                              height: 1.60,
+                                            ),
                                       ),
                                       TextSpan(
                                         text: 'What will you listen today?',
-                                        style: TextStyle(
-                                          color:
-                                              Theme.of(context).brightness ==
-                                                      Brightness.dark
-                                                  ? Colors.white
-                                                  : const Color(0xFF272A34),
-                                          fontSize: 24,
-                                          fontFamily:
-                                              AppTextStyles.albraFontFamily,
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.60,
-                                        ),
+                                        style: theme.textTheme.headlineSmall
+                                            ?.copyWith(
+                                              fontFamily:
+                                                  AppTextStyles.albraFontFamily,
+                                              fontWeight: FontWeight.w500,
+                                              height: 1.60,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -395,19 +357,16 @@ class _MainScreenState extends State<MainScreen> {
                           width: 48,
                           height: 48,
                           decoration: ShapeDecoration(
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Theme.of(context).colorScheme.surface
-                                    : const Color(0xFF191714),
+                            color: theme.colorScheme.surface,
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.all(
                                 Radius.circular(100),
                               ),
                             ),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.notifications,
-                            color: Colors.white,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -435,16 +394,9 @@ class _MainScreenState extends State<MainScreen> {
                                     decoration: ShapeDecoration(
                                       color:
                                           isSelected
-                                              ? Theme.of(context).brightness ==
-                                                      Brightness.dark
-                                                  ? Theme.of(
-                                                    context,
-                                                  ).colorScheme.surface
-                                                  : const Color(0xFF191714)
-                                              : Theme.of(context).brightness ==
-                                                  Brightness.dark
-                                              ? const Color(0xFF292929)
-                                              : const Color(0xFFE6DFCA),
+                                              ? theme.colorScheme.surface
+                                              : theme.colorScheme.surface
+                                                  .withOpacity(0.5),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(
                                           100,
@@ -453,22 +405,22 @@ class _MainScreenState extends State<MainScreen> {
                                     ),
                                     child: Text(
                                       category,
-                                      style: TextStyle(
-                                        color:
-                                            isSelected
-                                                ? Colors.white
-                                                : Theme.of(
-                                                      context,
-                                                    ).brightness ==
-                                                    Brightness.dark
-                                                ? Colors.white70
-                                                : const Color(0xFF191714),
-                                        fontSize: 14,
-                                        fontFamily:
-                                            AppTextStyles
-                                                .albraGroteskFontFamily,
-                                        fontWeight: FontWeight.w400,
-                                      ),
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                            color:
+                                                isSelected
+                                                    ? theme
+                                                        .colorScheme
+                                                        .onSurface
+                                                    : theme
+                                                        .colorScheme
+                                                        .onSurface
+                                                        .withOpacity(0.7),
+                                            fontFamily:
+                                                AppTextStyles
+                                                    .albraGroteskFontFamily,
+                                            fontWeight: FontWeight.w400,
+                                          ),
                                     ),
                                   ),
                                 ),
@@ -498,6 +450,8 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     Widget currentScreen;
     switch (_selectedIndex) {
       case 0:
@@ -523,19 +477,19 @@ class _MainScreenState extends State<MainScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.colorScheme.background,
       body: currentScreen,
       bottomNavigationBar: Container(
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.all(13),
         decoration: ShapeDecoration(
-          color: const Color(0xFF191714),
+          color: theme.colorScheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(100),
           ),
           shadows: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: theme.shadowColor.withOpacity(0.1),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -555,6 +509,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildNavItem(IconData icon, int index) {
+    final theme = Theme.of(context);
     bool isSelected = _selectedIndex == index;
     return GestureDetector(
       onTap: () {
@@ -570,7 +525,10 @@ class _MainScreenState extends State<MainScreen> {
         ),
         child: Icon(
           icon,
-          color: isSelected ? AppColors.accentRed : Colors.white,
+          color:
+              isSelected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurface,
           size: 24,
         ),
       ),

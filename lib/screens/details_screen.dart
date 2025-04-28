@@ -17,52 +17,62 @@ class _DetailsScreenState extends State<DetailsScreen> {
   double _progressValue = 0.0;
 
   Widget _buildBookCover() {
-    if (widget.book.coverUrl == null || widget.book.coverUrl!.isEmpty) {
+    final theme = Theme.of(context);
+    if (widget.book.coverUrl.isEmpty) {
       return Container(
-        color: Colors.grey.shade200,
-        child: const Icon(Icons.book, size: 50),
+        color: theme.colorScheme.surface,
+        child: Icon(Icons.book, size: 50, color: theme.colorScheme.onSurface),
       );
     }
 
     try {
-      if (widget.book.coverUrl!.startsWith('http')) {
+      if (widget.book.coverUrl.startsWith('http')) {
         // Network image
         return Image.network(
-          widget.book.coverUrl!,
+          widget.book.coverUrl,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
             return Container(
-              color: Colors.grey.shade200,
-              child: const Icon(Icons.book, size: 50),
+              color: theme.colorScheme.surface,
+              child: Icon(
+                Icons.book,
+                size: 50,
+                color: theme.colorScheme.onSurface,
+              ),
             );
           },
         );
       } else {
         // Asset image
         return Image.asset(
-          widget.book.coverUrl!,
+          widget.book.coverUrl,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
             return Container(
-              color: Colors.grey.shade200,
-              child: const Icon(Icons.book, size: 50),
+              color: theme.colorScheme.surface,
+              child: Icon(
+                Icons.book,
+                size: 50,
+                color: theme.colorScheme.onSurface,
+              ),
             );
           },
         );
       }
     } catch (e) {
       return Container(
-        color: Colors.grey.shade200,
-        child: const Icon(Icons.error, size: 50),
+        color: theme.colorScheme.surface,
+        child: Icon(Icons.error, size: 50, color: theme.colorScheme.onSurface),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor:
-          AppColors.lightBackground, // Ensure consistent background
+      backgroundColor: theme.colorScheme.background,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -76,31 +86,27 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
+                      onTap: () => Navigator.pop(context),
                       child: Container(
                         width: 48,
                         height: 48,
-                        decoration: const ShapeDecoration(
-                          color: Color(0xFF191714),
-                          shape: RoundedRectangleBorder(
+                        decoration: ShapeDecoration(
+                          color: theme.colorScheme.surface,
+                          shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.all(
                               Radius.circular(100),
                             ),
                           ),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.arrow_back,
-                          color: Colors.white,
+                          color: theme.colorScheme.onSurface,
                         ),
                       ),
                     ),
-                    const Text(
+                    Text(
                       'Details',
-                      style: TextStyle(
-                        color: Color(0xFF191714),
-                        fontSize: 16,
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
                         fontWeight: FontWeight.w500,
                       ),
@@ -117,15 +123,18 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       child: Container(
                         width: 48,
                         height: 48,
-                        decoration: const ShapeDecoration(
-                          color: Color(0xFF191714),
-                          shape: RoundedRectangleBorder(
+                        decoration: ShapeDecoration(
+                          color: theme.colorScheme.surface,
+                          shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.all(
                               Radius.circular(100),
                             ),
                           ),
                         ),
-                        child: const Icon(Icons.more_vert, color: Colors.white),
+                        child: Icon(
+                          Icons.more_vert,
+                          color: theme.colorScheme.onSurface,
+                        ),
                       ),
                     ),
                   ],
@@ -136,16 +145,16 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   Container(
                     width: 175.90,
                     height: 258.49,
-                    decoration: const ShapeDecoration(
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(
+                    decoration: ShapeDecoration(
+                      color: theme.colorScheme.surface,
+                      shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
                       shadows: [
                         BoxShadow(
-                          color: Color(0x19000000),
+                          color: theme.shadowColor.withOpacity(0.1),
                           blurRadius: 22,
-                          offset: Offset(-12, 10),
+                          offset: const Offset(-12, 10),
                           spreadRadius: 0,
                         ),
                       ],
@@ -160,14 +169,16 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Row(
-                        children: const [
-                          Icon(Icons.star, size: 20),
-                          SizedBox(width: 5),
+                        children: [
+                          Icon(
+                            Icons.star,
+                            size: 20,
+                            color: theme.colorScheme.onBackground,
+                          ),
+                          const SizedBox(width: 5),
                           Text(
                             '4.5',
-                            style: TextStyle(
-                              color: Color(0xFF191714),
-                              fontSize: 14,
+                            style: theme.textTheme.bodyMedium?.copyWith(
                               fontFamily: AppTextStyles.albraFontFamily,
                               fontWeight: FontWeight.w400,
                             ),
@@ -176,14 +187,16 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       ),
                       const SizedBox(width: 17),
                       Row(
-                        children: const [
-                          Icon(Icons.language, size: 20),
-                          SizedBox(width: 5),
+                        children: [
+                          Icon(
+                            Icons.language,
+                            size: 20,
+                            color: theme.colorScheme.onBackground,
+                          ),
+                          const SizedBox(width: 5),
                           Text(
                             'English',
-                            style: TextStyle(
-                              color: Color(0xFF191714),
-                              fontSize: 14,
+                            style: theme.textTheme.bodyMedium?.copyWith(
                               fontFamily: AppTextStyles.albraFontFamily,
                               fontWeight: FontWeight.w400,
                             ),
@@ -192,14 +205,16 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       ),
                       const SizedBox(width: 17),
                       Row(
-                        children: const [
-                          Icon(Icons.access_time, size: 20),
-                          SizedBox(width: 5),
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            size: 20,
+                            color: theme.colorScheme.onBackground,
+                          ),
+                          const SizedBox(width: 5),
                           Text(
                             '2 hours',
-                            style: TextStyle(
-                              color: Color(0xFF191714),
-                              fontSize: 14,
+                            style: theme.textTheme.bodyMedium?.copyWith(
                               fontFamily: AppTextStyles.albraFontFamily,
                               fontWeight: FontWeight.w400,
                             ),
@@ -211,18 +226,14 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   const SizedBox(height: 18),
                   Text(
                     widget.book.title,
-                    style: const TextStyle(
-                      color: Color(0xFF191714),
-                      fontSize: 24,
+                    style: theme.textTheme.headlineSmall?.copyWith(
                       fontFamily: AppTextStyles.albraFontFamily,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   Text(
                     widget.book.author,
-                    style: const TextStyle(
-                      color: Color(0xFF191714),
-                      fontSize: 16,
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontFamily: AppTextStyles.albraGroteskFontFamily,
                       fontWeight: FontWeight.w400,
                     ),
@@ -241,30 +252,35 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           _formatDuration(
                             Duration(seconds: (_progressValue * 60).toInt()),
                           ),
-                          style: const TextStyle(
-                            color: Color(0xFFA4A196),
-                            fontSize: 12,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.onBackground.withOpacity(
+                              0.6,
+                            ),
                             fontFamily: AppTextStyles.albraGroteskFontFamily,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
                         Expanded(
-                          child: Slider(
-                            value: _progressValue,
-                            onChanged: (value) {
-                              setState(() {
-                                _progressValue = value;
-                              });
-                            },
-                            activeColor: AppColors.accentRed,
-                            inactiveColor: Colors.black,
+                          child: SliderTheme(
+                            data: SliderThemeData(
+                              activeTrackColor: theme.colorScheme.primary,
+                              inactiveTrackColor: theme.colorScheme.onBackground
+                                  .withOpacity(0.2),
+                              thumbColor: theme.colorScheme.primary,
+                            ),
+                            child: Slider(
+                              value: _progressValue,
+                              onChanged: (value) {
+                                setState(() {
+                                  _progressValue = value;
+                                });
+                              },
+                            ),
                           ),
                         ),
-                        const Text(
+                        Text(
                           '1:00:00',
-                          style: TextStyle(
-                            color: Color(0xFF191714),
-                            fontSize: 12,
+                          style: theme.textTheme.labelSmall?.copyWith(
                             fontFamily: AppTextStyles.albraGroteskFontFamily,
                             fontWeight: FontWeight.w400,
                           ),
@@ -276,22 +292,28 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       width: 343,
                       height: 81,
                       padding: const EdgeInsets.all(13),
-                      decoration: const ShapeDecoration(
-                        color: Color(0xFF191714),
-                        shape: RoundedRectangleBorder(
+                      decoration: ShapeDecoration(
+                        color: theme.colorScheme.surface,
+                        shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(100)),
                         ),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          const Icon(Icons.music_note, color: Colors.white),
-                          const Icon(Icons.replay_10, color: Colors.white),
+                          Icon(
+                            Icons.music_note,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                          Icon(
+                            Icons.replay_10,
+                            color: theme.colorScheme.onSurface,
+                          ),
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.skip_previous,
-                                color: Colors.white,
+                                color: theme.colorScheme.onSurface,
                               ),
                               const SizedBox(width: 18),
                               GestureDetector(
@@ -306,22 +328,28 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 child: Container(
                                   width: 53,
                                   height: 53,
-                                  decoration: const ShapeDecoration(
-                                    color: AppColors.buttonRed,
-                                    shape: OvalBorder(),
+                                  decoration: ShapeDecoration(
+                                    color: theme.colorScheme.primary,
+                                    shape: const OvalBorder(),
                                   ),
                                   child: Icon(
                                     _isPlaying ? Icons.pause : Icons.play_arrow,
-                                    color: Colors.white,
+                                    color: theme.colorScheme.onPrimary,
                                   ),
                                 ),
                               ),
                               const SizedBox(width: 18),
-                              const Icon(Icons.skip_next, color: Colors.white),
+                              Icon(
+                                Icons.skip_next,
+                                color: theme.colorScheme.onSurface,
+                              ),
                             ],
                           ),
-                          const Icon(Icons.forward_10, color: Colors.white),
-                          const Icon(Icons.speed, color: Colors.white),
+                          Icon(
+                            Icons.forward_10,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                          Icon(Icons.speed, color: theme.colorScheme.onSurface),
                         ],
                       ),
                     ),

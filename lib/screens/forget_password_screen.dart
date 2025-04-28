@@ -7,76 +7,107 @@ class ForgetPasswordScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: theme.colorScheme.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Title for the forget password screen
               Text(
                 'Forget Password',
-                style: AppTextStyles.titleStyle.copyWith(
-                  color: const Color(0xFF191714),
+                style: theme.textTheme.displaySmall?.copyWith(
+                  fontFamily: AppTextStyles.albraFontFamily,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 20),
-              // Email input field
+
               TextField(
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: theme.colorScheme.surface,
                   hintText: 'Email',
-                  hintStyle: const TextStyle(
-                    color: Color(0xFFB8B8C7),
-                    fontSize: 14,
+                  hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
                     fontFamily: AppTextStyles.albraGroteskFontFamily,
                     fontWeight: FontWeight.w500,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: theme.colorScheme.outline),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: theme.colorScheme.outline),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: theme.colorScheme.primary),
                   ),
                 ),
+                style: TextStyle(color: theme.colorScheme.onSurface),
               ),
               const SizedBox(height: 20),
-              // Send reset link button
-              ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Reset link sent to your email!'),
+
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Reset link sent to your email!',
+                          style: TextStyle(
+                            color: theme.colorScheme.onInverseSurface,
+                          ),
+                        ),
+                        backgroundColor: theme.colorScheme.inverseSurface,
+                      ),
+                    );
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
                     ),
-                  );
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.buttonRed,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(100),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                ),
-                child: Text(
-                  'Send Reset Link',
-                  style: AppTextStyles.buttonTextStyle,
+                  child: Text(
+                    'Send Reset Link',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontFamily: AppTextStyles.albraGroteskFontFamily,
+                      fontWeight: FontWeight.w500,
+                      color: theme.colorScheme.onPrimary,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
-              // Back to login button
+
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
                 },
+                style: TextButton.styleFrom(
+                  foregroundColor: theme.colorScheme.primary,
+                ),
                 child: Text(
                   'Back to Login',
-                  style: AppTextStyles.buttonTextStyle.copyWith(
-                    color: AppColors.accentRed,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontFamily: AppTextStyles.albraGroteskFontFamily,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),

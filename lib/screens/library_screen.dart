@@ -99,8 +99,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: theme.colorScheme.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,20 +118,21 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     child: Container(
                       width: 48,
                       height: 48,
-                      decoration: const ShapeDecoration(
-                        color: Color(0xFF191714),
-                        shape: RoundedRectangleBorder(
+                      decoration: ShapeDecoration(
+                        color: theme.colorScheme.surface,
+                        shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(100)),
                         ),
                       ),
-                      child: const Icon(Icons.arrow_back, color: Colors.white),
+                      child: Icon(
+                        Icons.arrow_back,
+                        color: theme.colorScheme.onSurface,
+                      ),
                     ),
                   ),
-                  const Text(
+                  Text(
                     'Favorites',
-                    style: TextStyle(
-                      color: Color(0xFF191714),
-                      fontSize: 16,
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontFamily: AppTextStyles.albraGroteskFontFamily,
                       fontWeight: FontWeight.w500,
                     ),
@@ -137,13 +140,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   Container(
                     width: 48,
                     height: 48,
-                    decoration: const ShapeDecoration(
-                      color: Color(0xFF191714),
-                      shape: RoundedRectangleBorder(
+                    decoration: ShapeDecoration(
+                      color: theme.colorScheme.surface,
+                      shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(100)),
                       ),
                     ),
-                    child: const Icon(Icons.filter_list, color: Colors.white),
+                    child: Icon(
+                      Icons.filter_list,
+                      color: theme.colorScheme.onSurface,
+                    ),
                   ),
                 ],
               ),
@@ -154,11 +160,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Saved books',
-                    style: TextStyle(
-                      color: Color(0xFF010103),
-                      fontSize: 24,
+                    style: theme.textTheme.headlineSmall?.copyWith(
                       fontFamily: AppTextStyles.albraGroteskFontFamily,
                       fontWeight: FontWeight.w600,
                     ),
@@ -170,18 +174,19 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       horizontal: 24,
                       vertical: 16,
                     ),
-                    decoration: const ShapeDecoration(
-                      color: Color(0xFFF5F5FA),
-                      shape: RoundedRectangleBorder(
+                    decoration: ShapeDecoration(
+                      color: theme.colorScheme.surface.withOpacity(0.9),
+                      shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(8)),
                       ),
                     ),
                     child: TextField(
                       controller: _searchController,
-                      decoration: const InputDecoration(
+                      style: TextStyle(color: theme.colorScheme.onSurface),
+                      decoration: InputDecoration(
                         hintText: 'Search Books or Author...',
                         hintStyle: TextStyle(
-                          color: Color(0xFFB8B8C7),
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
                           fontSize: 14,
                           fontFamily: AppTextStyles.albraGroteskFontFamily,
                           fontWeight: FontWeight.w500,
@@ -194,16 +199,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ],
               ),
             ),
-            // Scrollable list of filtered books using ListView.builder for efficiency
+            // Scrollable list of filtered books
             Expanded(
               child:
                   _filteredBooks.isEmpty
-                      ? const Center(
+                      ? Center(
                         child: Text(
                           'No books found',
-                          style: TextStyle(
-                            color: Color(0xFF191714),
-                            fontSize: 16,
+                          style: theme.textTheme.bodyLarge?.copyWith(
                             fontFamily: AppTextStyles.albraGroteskFontFamily,
                             fontWeight: FontWeight.w400,
                           ),
@@ -228,9 +231,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
                               },
                               child: Container(
                                 padding: const EdgeInsets.all(12),
-                                decoration: const ShapeDecoration(
-                                  color: Colors.white,
-                                  shape: RoundedRectangleBorder(
+                                decoration: ShapeDecoration(
+                                  color: theme.colorScheme.surface,
+                                  shape: const RoundedRectangleBorder(
                                     borderRadius: BorderRadius.all(
                                       Radius.circular(12),
                                     ),
@@ -257,25 +260,24 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                         children: [
                                           Text(
                                             book.title,
-                                            style: const TextStyle(
-                                              color: Color(0xFF010103),
-                                              fontSize: 16,
-                                              fontFamily:
-                                                  AppTextStyles.albraFontFamily,
-                                              fontWeight: FontWeight.w500,
-                                            ),
+                                            style: theme.textTheme.titleMedium
+                                                ?.copyWith(
+                                                  fontFamily:
+                                                      AppTextStyles
+                                                          .albraFontFamily,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                           Text(
                                             book.author,
-                                            style: const TextStyle(
-                                              color: Color(0xFF191815),
-                                              fontSize: 14,
-                                              fontFamily:
-                                                  AppTextStyles
-                                                      .albraGroteskFontFamily,
-                                              fontWeight: FontWeight.w400,
-                                            ),
+                                            style: theme.textTheme.bodyMedium
+                                                ?.copyWith(
+                                                  fontFamily:
+                                                      AppTextStyles
+                                                          .albraGroteskFontFamily,
+                                                  fontWeight: FontWeight.w400,
+                                                ),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ],

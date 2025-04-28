@@ -6,13 +6,10 @@ import '../constants/theme_constants.dart';
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
 
-  // Method to mark onboarding as completed
   Future<void> _completeOnboarding(BuildContext context) async {
-    // Save that user has seen onboarding
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('seen_onboarding', true);
-    
-    // Navigate to registration
+
     if (context.mounted) {
       Navigator.pushReplacementNamed(context, '/register');
     }
@@ -20,15 +17,20 @@ class OnboardingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
+      SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
+        statusBarIconBrightness:
+            theme.brightness == Brightness.dark
+                ? Brightness.light
+                : Brightness.dark,
       ),
     );
 
     return Scaffold(
-      backgroundColor: AppColors.darkBackground,
+      backgroundColor: theme.colorScheme.background,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -39,24 +41,24 @@ class OnboardingScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Onboarding title with highlighted "Genre"
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
-                      style: AppTextStyles.titleStyle,
+                      style: theme.textTheme.displaySmall?.copyWith(
+                        fontFamily: AppTextStyles.albraFontFamily,
+                        fontWeight: FontWeight.w500,
+                        color: theme.colorScheme.onBackground,
+                      ),
                       children: [
                         const TextSpan(text: 'Choose Your\n'),
                         const TextSpan(text: 'Favourite '),
                         TextSpan(
                           text: 'Genre ',
-                          style: AppTextStyles.titleStyle.copyWith(
-                            color: AppColors.accentRed,
-                          ),
+                          style: TextStyle(color: theme.colorScheme.primary),
                         ),
                       ],
                     ),
                   ),
-                  // Onboarding image
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 75),
@@ -69,7 +71,6 @@ class OnboardingScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Next button to proceed to registration
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Container(
@@ -79,7 +80,8 @@ class OnboardingScreen extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: () => _completeOnboarding(context),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.buttonRed,
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: theme.colorScheme.onPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(100),
                           ),
@@ -90,7 +92,11 @@ class OnboardingScreen extends StatelessWidget {
                         ),
                         child: Text(
                           'Next',
-                          style: AppTextStyles.buttonTextStyle,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: theme.colorScheme.onPrimary,
+                            fontFamily: AppTextStyles.albraGroteskFontFamily,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),

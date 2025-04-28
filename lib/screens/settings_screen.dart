@@ -10,8 +10,10 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.colorScheme.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,31 +29,20 @@ class SettingsScreen extends StatelessWidget {
                       width: 48,
                       height: 48,
                       decoration: ShapeDecoration(
-                        color:
-                            Theme.of(context).brightness == Brightness.dark
-                                ? Colors.white
-                                : const Color(0xFF191714),
+                        color: theme.colorScheme.surface,
                         shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(100)),
                         ),
                       ),
                       child: Icon(
                         Icons.arrow_back,
-                        color:
-                            Theme.of(context).brightness == Brightness.dark
-                                ? Colors.black
-                                : Colors.white,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                   ),
                   Text(
                     'Settings',
-                    style: TextStyle(
-                      color:
-                          Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : const Color(0xFF191714),
-                      fontSize: 16,
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontFamily: AppTextStyles.albraGroteskFontFamily,
                       fontWeight: FontWeight.w500,
                     ),
@@ -68,12 +59,7 @@ class SettingsScreen extends StatelessWidget {
                   children: [
                     Text(
                       'Appearance',
-                      style: TextStyle(
-                        color:
-                            Theme.of(context).brightness == Brightness.dark
-                                ? Colors.white
-                                : const Color(0xFF191714),
-                        fontSize: 20,
+                      style: theme.textTheme.titleLarge?.copyWith(
                         fontFamily: AppTextStyles.albraFontFamily,
                         fontWeight: FontWeight.w500,
                       ),
@@ -83,12 +69,7 @@ class SettingsScreen extends StatelessWidget {
                     const SizedBox(height: 32),
                     Text(
                       'Language',
-                      style: TextStyle(
-                        color:
-                            Theme.of(context).brightness == Brightness.dark
-                                ? Colors.white
-                                : const Color(0xFF191714),
-                        fontSize: 20,
+                      style: theme.textTheme.titleLarge?.copyWith(
                         fontFamily: AppTextStyles.albraFontFamily,
                         fontWeight: FontWeight.w500,
                       ),
@@ -107,11 +88,11 @@ class SettingsScreen extends StatelessWidget {
 
   Widget _buildThemeSelector(BuildContext context) {
     final settings = Provider.of<SettingsProvider>(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF292929) : Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -123,7 +104,7 @@ class SettingsScreen extends StatelessWidget {
             isSelected: settings.themeMode == ThemeMode.light,
             onTap: () => settings.setThemeMode(ThemeMode.light),
           ),
-          const Divider(height: 1),
+          Divider(height: 1, color: theme.dividerColor),
           _buildThemeOption(
             context,
             title: 'Dark',
@@ -138,11 +119,11 @@ class SettingsScreen extends StatelessWidget {
 
   Widget _buildLanguageSelector(BuildContext context) {
     final settings = Provider.of<SettingsProvider>(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF292929) : Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -154,7 +135,7 @@ class SettingsScreen extends StatelessWidget {
             isSelected: settings.locale.languageCode == 'en',
             onTap: () => settings.setLocale('en'),
           ),
-          const Divider(height: 1),
+          Divider(height: 1, color: theme.dividerColor),
           _buildLanguageOption(
             context,
             title: 'Russian',
@@ -162,7 +143,7 @@ class SettingsScreen extends StatelessWidget {
             isSelected: settings.locale.languageCode == 'ru',
             onTap: () => settings.setLocale('ru'),
           ),
-          const Divider(height: 1),
+          Divider(height: 1, color: theme.dividerColor),
           _buildLanguageOption(
             context,
             title: 'Kazakh',
@@ -182,7 +163,7 @@ class SettingsScreen extends StatelessWidget {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
 
     return InkWell(
       onTap: onTap,
@@ -196,26 +177,23 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : const Color(0xFF191714),
-                      fontSize: 16,
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontFamily: AppTextStyles.albraFontFamily,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      color: isDark ? Colors.grey[400] : Colors.grey,
-                      fontSize: 14,
+                    style: theme.textTheme.bodyMedium?.copyWith(
                       fontFamily: AppTextStyles.albraGroteskFontFamily,
+                      color: theme.colorScheme.onSurface.withOpacity(0.7),
                     ),
                   ),
                 ],
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle, color: AppColors.accentRed),
+              Icon(Icons.check_circle, color: theme.colorScheme.primary),
           ],
         ),
       ),
@@ -229,7 +207,7 @@ class SettingsScreen extends StatelessWidget {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
 
     return InkWell(
       onTap: onTap,
@@ -240,16 +218,14 @@ class SettingsScreen extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: TextStyle(
-                  color: isDark ? Colors.white : const Color(0xFF191714),
-                  fontSize: 16,
+                style: theme.textTheme.titleMedium?.copyWith(
                   fontFamily: AppTextStyles.albraFontFamily,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle, color: AppColors.accentRed),
+              Icon(Icons.check_circle, color: theme.colorScheme.primary),
           ],
         ),
       ),
