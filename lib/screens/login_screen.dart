@@ -26,9 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // Method to handle login
   Future<void> _handleLogin() async {
-    // Validate inputs
     if (_emailController.text.trim().isEmpty) {
       setState(() {
         _errorMessage = 'Email is required';
@@ -49,27 +47,23 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // Call the login method from AuthService
       final success = await AuthService.login(
         _emailController.text.trim(),
         _passwordController.text,
       );
 
-      // If login is successful, navigate to main screen
       if (success) {
         if (!mounted) return;
-        
-        // If "Remember me" is not checked, we'll still navigate but not store the login status
+
         if (!_isRemembered) {
-          // You might want to handle this case differently based on your app's requirements
+          // Handle non-remembered login case
         }
-        
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       } else {
-        // If login failed, show error message
         if (!mounted) return;
         setState(() {
           _errorMessage = 'Invalid email or password';
@@ -87,8 +81,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: theme.colorScheme.background,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -97,75 +93,91 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 50),
-                // Title for the login screen
                 Text(
                   'Login',
-                  style: AppTextStyles.titleStyle.copyWith(color: const Color(0xFF191714)),
+                  style: theme.textTheme.displaySmall?.copyWith(
+                    fontFamily: AppTextStyles.albraFontFamily,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 const SizedBox(height: 20),
-                
-                // Error message display
+
                 if (_errorMessage != null)
                   Container(
                     padding: const EdgeInsets.all(10),
                     margin: const EdgeInsets.only(bottom: 20),
                     decoration: BoxDecoration(
-                      color: Colors.red.shade100,
+                      color: theme.colorScheme.error.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       _errorMessage!,
-                      style: const TextStyle(
-                        color: Colors.red,
+                      style: theme.textTheme.bodyMedium?.copyWith(
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
+                        color: theme.colorScheme.error,
                       ),
                     ),
                   ),
-                
-                // Email input field
+
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: theme.colorScheme.surface,
                     hintText: 'Email',
-                    hintStyle: const TextStyle(
-                      color: Color(0xFFB8B8C7),
-                      fontSize: 14,
+                    hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
                       fontFamily: AppTextStyles.albraGroteskFontFamily,
                       fontWeight: FontWeight.w500,
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: theme.colorScheme.outline),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: theme.colorScheme.outline),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: theme.colorScheme.primary),
                     ),
                   ),
+                  style: TextStyle(color: theme.colorScheme.onSurface),
                 ),
                 const SizedBox(height: 10),
-                
-                // Password input field
+
                 TextField(
                   controller: _passwordController,
+                  obscureText: true,
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: theme.colorScheme.surface,
                     hintText: 'Password',
-                    hintStyle: const TextStyle(
-                      color: Color(0xFFB8B8C7),
-                      fontSize: 14,
+                    hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
                       fontFamily: AppTextStyles.albraGroteskFontFamily,
                       fontWeight: FontWeight.w500,
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: theme.colorScheme.outline),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: theme.colorScheme.outline),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: theme.colorScheme.primary),
                     ),
                   ),
-                  obscureText: true,
+                  style: TextStyle(color: theme.colorScheme.onSurface),
                   onSubmitted: (_) => _handleLogin(),
                 ),
                 const SizedBox(height: 10),
-                
-                // Remember me checkbox
+
                 Row(
                   children: [
                     Checkbox(
@@ -175,13 +187,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           _isRemembered = value ?? false;
                         });
                       },
-                      activeColor: AppColors.accentRed,
+                      activeColor: theme.colorScheme.primary,
                     ),
-                    const Text(
+                    Text(
                       'Remember me',
-                      style: TextStyle(
-                        color: Color(0xFF191714),
-                        fontSize: 14,
+                      style: theme.textTheme.bodyMedium?.copyWith(
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
                         fontWeight: FontWeight.w400,
                       ),
@@ -189,65 +199,85 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                
-                // Login button
+
                 SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.buttonRed,
+                      backgroundColor: theme.colorScheme.primary,
+                      foregroundColor: theme.colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(100),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
+                      disabledBackgroundColor: theme.colorScheme.primary
+                          .withOpacity(0.5),
+                      disabledForegroundColor: theme.colorScheme.onPrimary
+                          .withOpacity(0.7),
                     ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
+                    child:
+                        _isLoading
+                            ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: theme.colorScheme.onPrimary,
+                                strokeWidth: 2,
+                              ),
+                            )
+                            : Text(
+                              'Login',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontFamily:
+                                    AppTextStyles.albraGroteskFontFamily,
+                                fontWeight: FontWeight.w500,
+                                color: theme.colorScheme.onPrimary,
+                              ),
                             ),
-                          )
-                        : Text(
-                            'Login',
-                            style: AppTextStyles.buttonTextStyle,
-                          ),
                   ),
                 ),
                 const SizedBox(height: 10),
-                
-                // Register link
+
                 TextButton(
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const RegisterScreen(),
+                      ),
                     );
                   },
+                  style: TextButton.styleFrom(
+                    foregroundColor: theme.colorScheme.primary,
+                  ),
                   child: Text(
                     'Don\'t have an account? Register',
-                    style: AppTextStyles.buttonTextStyle.copyWith(
-                      color: AppColors.accentRed,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontFamily: AppTextStyles.albraGroteskFontFamily,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
-                
-                // Forget password link
+
                 TextButton(
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ForgetPasswordScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const ForgetPasswordScreen(),
+                      ),
                     );
                   },
+                  style: TextButton.styleFrom(
+                    foregroundColor: theme.colorScheme.primary,
+                  ),
                   child: Text(
                     'Forget Password?',
-                    style: AppTextStyles.buttonTextStyle.copyWith(
-                      color: AppColors.accentRed,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontFamily: AppTextStyles.albraGroteskFontFamily,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),

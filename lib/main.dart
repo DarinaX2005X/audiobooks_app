@@ -1,6 +1,7 @@
 import 'package:audiobooks_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/login_screen.dart';
@@ -10,11 +11,10 @@ import 'screens/forget_password_screen.dart';
 import 'screens/details_screen.dart';
 import 'screens/text_screen.dart';
 import 'screens/splash_screen.dart';
-import 'screens/search_screen.dart';
-import 'screens/library_screen.dart';
-import 'screens/profile_screen.dart';
+import 'screens/settings_screen.dart';
 import 'constants/theme_constants.dart';
 import 'models/book.dart';
+import 'services/settings_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +23,16 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
   await AuthService.init();
-  runApp(const MyApp());
+
+  final settingsProvider = SettingsProvider();
+  await settingsProvider.init();
+
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => settingsProvider,
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -31,15 +40,60 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context);
     return MaterialApp(
       title: 'Audio Books App',
       debugShowCheckedModeBanner: false,
+      themeMode: settings.themeMode,
+      locale: settings.locale,
       theme: ThemeData(
-        scaffoldBackgroundColor: AppColors.darkBackground,
+        useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFF1EEE3),
         fontFamily: AppTextStyles.albraFontFamily,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.accentRed,
-          brightness: Brightness.dark,
+        colorScheme: ColorScheme.light(
+          primary: AppColors.accentRed,
+          secondary: AppColors.accentRed,
+          background: const Color(0xFFF1EEE3),
+          surface: Colors.white,
+        ),
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: Color(0xFF191714)),
+          bodyMedium: TextStyle(color: Color(0xFF191714)),
+        ),
+        iconTheme: const IconThemeData(color: Color(0xFF191714)),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.accentRed,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(100),
+            ),
+          ),
+        ),
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFF191714),
+        fontFamily: AppTextStyles.albraFontFamily,
+        colorScheme: ColorScheme.dark(
+          primary: AppColors.accentRed,
+          secondary: AppColors.accentRed,
+          background: const Color(0xFF191714),
+          surface: const Color(0xFF292929),
+        ),
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: Colors.white),
+          bodyMedium: TextStyle(color: Colors.white),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.accentRed,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(100),
+            ),
+          ),
         ),
       ),
       initialRoute: '/splash',
@@ -49,94 +103,15 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegisterScreen(),
         '/login': (context) => const LoginScreen(),
         '/personalize': (context) => const PersonalizeScreen(),
-        '/main': (context) => const AppNavigator(initialIndex: 0),
-        '/search': (context) => const AppNavigator(initialIndex: 1),
-        '/library': (context) => const AppNavigator(initialIndex: 2),
-        '/profile': (context) => const AppNavigator(initialIndex: 3),
+        '/main': (context) => const MainScreen(),
         '/forget_password': (context) => const ForgetPasswordScreen(),
-        '/details': (context) => DetailsScreen(
-          book: ModalRoute.of(context)!.settings.arguments as Book,
-        ),
+        '/settings': (context) => const SettingsScreen(),
+        '/details':
+            (context) => DetailsScreen(
+              book: ModalRoute.of(context)!.settings.arguments as Book,
+            ),
         '/text': (context) => const TextScreen(),
       },
-    );
-  }
-}
-
-class AppNavigator extends StatefulWidget {
-  final int initialIndex;
-
-  const AppNavigator({super.key, required this.initialIndex});
-
-  @override
-  State<AppNavigator> createState() => _AppNavigatorState();
-}
-
-class _AppNavigatorState extends State<AppNavigator> {
-  late int _currentIndex;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentIndex = widget.initialIndex;
-  }
-
-  final List<Widget> _screens = const [
-    MainScreen(),
-    SearchScreen(),
-    LibraryScreen(),
-    ProfileScreen(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-    final routes = ['/main', '/search', '/library', '/profile'];
-    Navigator.pushNamed(context, routes[index]);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(13),
-        decoration: const ShapeDecoration(
-          color: Color(0xFF191714),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(100)),
-          ),
-        ),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          currentIndex: _currentIndex,
-          onTap: _onItemTapped,
-          backgroundColor: Colors.transparent,
-          selectedItemColor: AppColors.accentRed,
-          unselectedItemColor: Colors.white,
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home, size: 24),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search, size: 24),
-              label: 'Search',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.favorite, size: 24),
-              label: 'Library',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person, size: 24),
-              label: 'Profile',
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

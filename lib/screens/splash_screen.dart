@@ -17,51 +17,46 @@ class _SplashScreenState extends State<SplashScreen> {
     _checkFirstTimeAndAuth();
   }
 
-  // Check if it's the first time and authentication status
   Future<void> _checkFirstTimeAndAuth() async {
-    // Add a small delay to show the splash screen
     await Future.delayed(const Duration(seconds: 2));
 
     final prefs = await SharedPreferences.getInstance();
     final isFirstTime = !(prefs.getBool('seen_onboarding') ?? false);
-
-    // Check authentication status
     final isLoggedIn = await AuthService.isLoggedIn();
 
     if (!mounted) return;
 
     if (isFirstTime) {
-      // First time user - show onboarding
       Navigator.of(context).pushReplacementNamed('/onboarding');
     } else if (isLoggedIn) {
-      // Returning authenticated user - go to main screen
       Navigator.of(context).pushReplacementNamed('/main');
     } else {
-      // Returning unauthenticated user - go to login
       Navigator.of(context).pushReplacementNamed('/login');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: theme.colorScheme.background,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // App logo or icon
-            Icon(Icons.headphones, size: 80, color: AppColors.accentRed),
+            Icon(Icons.headphones, size: 80, color: theme.colorScheme.primary),
             const SizedBox(height: 20),
             Text(
               'Audiobooks App',
-              style: AppTextStyles.titleStyle.copyWith(
-                color: const Color(0xFF191714),
+              style: theme.textTheme.displaySmall?.copyWith(
+                fontFamily: AppTextStyles.albraFontFamily,
+                fontWeight: FontWeight.w500,
+                color: theme.colorScheme.onBackground,
               ),
             ),
             const SizedBox(height: 40),
-            // Loading indicator
-            CircularProgressIndicator(color: AppColors.accentRed),
+            CircularProgressIndicator(color: theme.colorScheme.primary),
           ],
         ),
       ),

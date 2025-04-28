@@ -12,96 +12,55 @@ class DetailsScreen extends StatefulWidget {
   State<DetailsScreen> createState() => _DetailsScreenState();
 }
 
-class _DetailsScreenState extends State<DetailsScreen>
-    with SingleTickerProviderStateMixin {
+class _DetailsScreenState extends State<DetailsScreen> {
   bool _isPlaying = false;
   double _progressValue = 0.0;
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _pulseAnimation;
 
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
-    );
-    
-    _pulseAnimation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.1),
-        weight: 1.0,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1.1, end: 1.0),
-        weight: 1.0,
-      ),
-    ]).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
+Widget _buildBookCover() {
+  if (widget.book.coverUrl == null || widget.book.coverUrl!.isEmpty) {
+    return Container(
+      color: Colors.grey.shade200,
+      child: const Icon(Icons.book, size: 50),
     );
   }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  Widget _buildBookCover() {
-    if (widget.book.coverUrl == null || widget.book.coverUrl!.isEmpty) {
-      return Container(
-        color: Colors.grey.shade200,
-        child: const Icon(Icons.book, size: 50),
+  
+  try {
+    if (widget.book.coverUrl!.startsWith('http')) {
+      // Network image
+      return Image.network(
+        widget.book.coverUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey.shade200,
+            child: const Icon(Icons.book, size: 50),
+          );
+        },
+      );
+    } else {
+      // Asset image
+      return Image.asset(
+        widget.book.coverUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey.shade200,
+            child: const Icon(Icons.book, size: 50),
+          );
+        },
       );
     }
-    
-    try {
-      if (widget.book.coverUrl!.startsWith('http')) {
-        return Image.network(
-          widget.book.coverUrl!,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: Colors.grey.shade200,
-              child: const Icon(Icons.book, size: 50),
-            );
-          },
-        );
-      } else {
-        return Image.asset(
-          widget.book.coverUrl!,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: Colors.grey.shade200,
-              child: const Icon(Icons.error, size: 50),
-            );
-          },
-        );
-      }
-    } catch (e) {
-      return Container(
-        color: Colors.grey.shade200,
-        child: const Icon(Icons.error, size: 50),
-      );
-    }
+  } catch (e) {
+    return Container(
+      color: Colors.grey.shade200,
+      child: const Icon(Icons.error, size: 50),
+    );
   }
-
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: AppColors.lightBackground, // Ensure consistent background
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -112,7 +71,9 @@ class _DetailsScreenState extends State<DetailsScreen>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     GestureDetector(
-                      onTap: () => Navigator.pop(context),
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
                       child: Container(
                         width: 48,
                         height: 48,
@@ -130,7 +91,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                       style: TextStyle(
                         color: Color(0xFF191714),
                         fontSize: 16,
-                        fontFamily: 'AlbraGrotesk',
+                        fontFamily: AppTextStyles.albraGroteskFontFamily,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -175,10 +136,10 @@ class _DetailsScreenState extends State<DetailsScreen>
                         ),
                       ],
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: _buildBookCover(),
-                    ),
+                  child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                        child: _buildBookCover(),
+                      ),
                   ),
                   const SizedBox(height: 55),
                   Row(
@@ -193,7 +154,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                             style: TextStyle(
                               color: Color(0xFF191714),
                               fontSize: 14,
-                              fontFamily: 'Albra',
+                              fontFamily: AppTextStyles.albraFontFamily,
                               fontWeight: FontWeight.w400,
                             ),
                           ),
@@ -209,7 +170,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                             style: TextStyle(
                               color: Color(0xFF191714),
                               fontSize: 14,
-                              fontFamily: 'Albra',
+                              fontFamily: AppTextStyles.albraFontFamily,
                               fontWeight: FontWeight.w400,
                             ),
                           ),
@@ -225,7 +186,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                             style: TextStyle(
                               color: Color(0xFF191714),
                               fontSize: 14,
-                              fontFamily: 'Albra',
+                              fontFamily: AppTextStyles.albraFontFamily,
                               fontWeight: FontWeight.w400,
                             ),
                           ),
@@ -239,7 +200,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                     style: const TextStyle(
                       color: Color(0xFF191714),
                       fontSize: 24,
-                      fontFamily: 'Albra',
+                      fontFamily: AppTextStyles.albraFontFamily,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -248,7 +209,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                     style: const TextStyle(
                       color: Color(0xFF191714),
                       fontSize: 16,
-                      fontFamily: 'AlbraGrotesk',
+                      fontFamily: AppTextStyles.albraGroteskFontFamily,
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -267,7 +228,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                           style: const TextStyle(
                             color: Color(0xFFA4A196),
                             fontSize: 12,
-                            fontFamily: 'AlbraGrotesk',
+                            fontFamily: AppTextStyles.albraGroteskFontFamily,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -288,7 +249,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                           style: TextStyle(
                             color: Color(0xFF191714),
                             fontSize: 12,
-                            fontFamily: 'AlbraGrotesk',
+                            fontFamily: AppTextStyles.albraGroteskFontFamily,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -315,10 +276,7 @@ class _DetailsScreenState extends State<DetailsScreen>
                               const Icon(Icons.skip_previous, color: Colors.white),
                               const SizedBox(width: 18),
                               GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTapDown: (_) => _animationController.forward(),
-                                onTapUp: (_) {
-                                  _animationController.reverse();
+                                onTap: () {
                                   setState(() {
                                     _isPlaying = !_isPlaying;
                                     if (_isPlaying) {
@@ -326,35 +284,17 @@ class _DetailsScreenState extends State<DetailsScreen>
                                     }
                                   });
                                 },
-                                onTapCancel: () => _animationController.reverse(),
-                                child: AnimatedBuilder(
-                                  animation: _animationController,
-                                  builder: (context, child) {
-                                    return Transform.scale(
-                                      scale: _isPlaying
-                                          ? _pulseAnimation.value
-                                          : _scaleAnimation.value,
-                                      child: Container(
-                                        width: 53,
-                                        height: 53,
-                                        decoration: const ShapeDecoration(
-                                          color: AppColors.buttonRed,
-                                          shape: OvalBorder(),
-                                          shadows: [
-                                            BoxShadow(
-                                              color: Colors.black26,
-                                              blurRadius: 10,
-                                              spreadRadius: 2,
-                                            ),
-                                          ],
-                                        ),
-                                        child: Icon(
-                                          _isPlaying ? Icons.pause : Icons.play_arrow,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    );
-                                  },
+                                child: Container(
+                                  width: 53,
+                                  height: 53,
+                                  decoration: const ShapeDecoration(
+                                    color: AppColors.buttonRed,
+                                    shape: OvalBorder(),
+                                  ),
+                                  child: Icon(
+                                    _isPlaying ? Icons.pause : Icons.play_arrow,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 18),

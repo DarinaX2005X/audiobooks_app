@@ -16,12 +16,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   bool _isAccepted = false;
   bool _isLoading = false;
   String? _errorMessage;
   bool _obscurePassword = true;
-  
+
   @override
   void dispose() {
     _usernameController.dispose();
@@ -29,50 +29,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _passwordController.dispose();
     super.dispose();
   }
-  
-  // Email validation
+
   bool _isValidEmail(String email) {
     final emailRegExp = RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
     return emailRegExp.hasMatch(email);
   }
-  
-  // Handle registration
+
   Future<void> _handleRegister() async {
-    // Validate form
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    
-    // Check terms acceptance
+
     if (!_isAccepted) {
       setState(() {
         _errorMessage = 'Please accept the terms and conditions';
       });
       return;
     }
-    
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
-    
+
     try {
       final result = await AuthService.register(
         _usernameController.text.trim(),
         _emailController.text.trim(),
         _passwordController.text,
       );
-      
+
       if (!mounted) return;
-      
+
       if (result['success']) {
-        // Registration successful, navigate to personalize screen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
       } else {
-        // Registration failed, show error
         setState(() {
           _errorMessage = result['message'];
           _isLoading = false;
@@ -89,8 +83,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: theme.colorScheme.background,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -100,48 +96,63 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 40),
-                  // Title for the register screen
                   Text(
                     'Register',
-                    style: AppTextStyles.titleStyle.copyWith(color: const Color(0xFF191714)),
+                    style: theme.textTheme.displaySmall?.copyWith(
+                      fontFamily: AppTextStyles.albraFontFamily,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(height: 20),
-                  
-                  // Error message if any
+
                   if (_errorMessage != null)
                     Container(
                       padding: const EdgeInsets.all(10),
                       margin: const EdgeInsets.only(bottom: 15),
                       decoration: BoxDecoration(
-                        color: Colors.red.shade100,
+                        color: theme.colorScheme.error.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         _errorMessage!,
-                        style: const TextStyle(
-                          color: Colors.red,
+                        style: theme.textTheme.bodyMedium?.copyWith(
                           fontFamily: AppTextStyles.albraGroteskFontFamily,
+                          color: theme.colorScheme.error,
                         ),
                       ),
                     ),
-                  
-                  // Username field
+
                   TextFormField(
                     controller: _usernameController,
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: theme.colorScheme.surface,
                       hintText: 'Username',
-                      hintStyle: const TextStyle(
-                        color: Color(0xFFB8B8C7),
-                        fontSize: 14,
+                      hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
                         fontWeight: FontWeight.w500,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.outline,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.outline,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
                     ),
+                    style: TextStyle(color: theme.colorScheme.onSurface),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Username is required';
@@ -150,25 +161,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                   ),
                   const SizedBox(height: 10),
-                  
-                  // Email input field
+
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: theme.colorScheme.surface,
                       hintText: 'Email',
-                      hintStyle: const TextStyle(
-                        color: Color(0xFFB8B8C7),
-                        fontSize: 14,
+                      hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
                         fontWeight: FontWeight.w500,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.outline,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.outline,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
                     ),
+                    style: TextStyle(color: theme.colorScheme.onSurface),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Email is required';
@@ -180,28 +205,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                   ),
                   const SizedBox(height: 10),
-                  
-                  // Password input field
+
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: theme.colorScheme.surface,
                       hintText: 'Password',
-                      hintStyle: const TextStyle(
-                        color: Color(0xFFB8B8C7),
-                        fontSize: 14,
+                      hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
                         fontWeight: FontWeight.w500,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.outline,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.outline,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                          color: Colors.grey,
+                          _obscurePassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
                         ),
                         onPressed: () {
                           setState(() {
@@ -210,6 +250,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         },
                       ),
                     ),
+                    style: TextStyle(color: theme.colorScheme.onSurface),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Password is required';
@@ -221,25 +262,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                   ),
                   const SizedBox(height: 10),
-                  
-                  // Password requirements hint
-                  const Align(
+
+                  Align(
                     alignment: Alignment.centerLeft,
                     child: Padding(
-                      padding: EdgeInsets.only(left: 8.0),
+                      padding: const EdgeInsets.only(left: 8.0),
                       child: Text(
                         'Password must be at least 8 characters',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onBackground.withOpacity(
+                            0.6,
+                          ),
                           fontFamily: AppTextStyles.albraGroteskFontFamily,
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 10),
-                  
-                  // Terms and conditions checkbox
+
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -250,16 +290,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             _isAccepted = value ?? false;
                           });
                         },
-                        activeColor: AppColors.accentRed,
+                        activeColor: theme.colorScheme.primary,
                       ),
                       Flexible(
                         child: Padding(
                           padding: const EdgeInsets.only(top: 15),
                           child: Text(
                             'By signing up, you agree to the Terms, Data Policy and Cookies Policy.',
-                            style: const TextStyle(
-                              color: Color(0xFF191714),
-                              fontSize: 12,
+                            style: theme.textTheme.bodySmall?.copyWith(
                               fontFamily: AppTextStyles.albraGroteskFontFamily,
                               fontWeight: FontWeight.w400,
                             ),
@@ -269,49 +307,63 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  
-                  // Register button
+
                   SizedBox(
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _handleRegister,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.buttonRed,
-                        disabledBackgroundColor: Colors.grey[400],
+                        backgroundColor: theme.colorScheme.primary,
+                        foregroundColor: theme.colorScheme.onPrimary,
+                        disabledBackgroundColor: theme.colorScheme.primary
+                            .withOpacity(0.5),
+                        disabledForegroundColor: theme.colorScheme.onPrimary
+                            .withOpacity(0.7),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(100),
                         ),
                       ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                      child:
+                          _isLoading
+                              ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: theme.colorScheme.onPrimary,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : Text(
+                                'Register',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontFamily:
+                                      AppTextStyles.albraGroteskFontFamily,
+                                  fontWeight: FontWeight.w500,
+                                  color: theme.colorScheme.onPrimary,
+                                ),
                               ),
-                            )
-                          : Text(
-                              'Register',
-                              style: AppTextStyles.buttonTextStyle,
-                            ),
                     ),
                   ),
                   const SizedBox(height: 15),
-                  
-                  // Login link
+
                   TextButton(
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
                       );
                     },
+                    style: TextButton.styleFrom(
+                      foregroundColor: theme.colorScheme.primary,
+                    ),
                     child: Text(
                       'Already have an account? Login',
-                      style: AppTextStyles.buttonTextStyle.copyWith(
-                        color: AppColors.accentRed,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontFamily: AppTextStyles.albraGroteskFontFamily,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),

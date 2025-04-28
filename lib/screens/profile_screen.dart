@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../constants/theme_constants.dart';
 import '../services/user_service.dart';
 import '../services/auth_service.dart';
+import 'settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -17,7 +18,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   Map<String, dynamic> _userData = {};
-  
+
   // User stats from the API
   int _favoritesCount = 0;
   int _inProgressCount = 0;
@@ -43,11 +44,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _isLoading = false;
           if (result['success']) {
             _userData = result['user'];
-            
+
             // Process additional user data
             _favoritesCount = (_userData['favorites'] as List?)?.length ?? 0;
             _inProgressCount = (_userData['progress'] as List?)?.length ?? 0;
-            
           } else {
             _errorMessage = result['message'];
             // If authentication error, navigate to login
@@ -74,7 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Format date for display
   String _formatDate(String? dateString) {
     if (dateString == null) return 'Not available';
-    
+
     try {
       final date = DateTime.parse(dateString);
       return DateFormat('MMM d, yyyy').format(date);
@@ -109,15 +109,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Call logout
     try {
       final success = await AuthService.logout();
-      
+
       if (!mounted) return;
-      
+
       // Close loading dialog
       Navigator.of(context).pop();
-      
+
       if (success) {
         // Navigate to login screen
-        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/login', (route) => false);
       } else {
         // Show error
         ScaffoldMessenger.of(context).showSnackBar(
@@ -126,10 +128,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      
+
       // Close loading dialog
       Navigator.of(context).pop();
-      
+
       // Show error
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('An error occurred. Please try again.')),
@@ -139,12 +141,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: theme.colorScheme.background,
       body: SafeArea(
-        child: _isLoading 
-            ? const Center(child: CircularProgressIndicator())
-            : _errorMessage != null
+        child:
+            _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _errorMessage != null
                 ? _buildErrorView()
                 : _buildProfileContent(),
       ),
@@ -153,36 +158,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Error view when profile loading fails
   Widget _buildErrorView() {
+    final theme = Theme.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              color: Colors.red,
-              size: 60,
-            ),
+            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
             const SizedBox(height: 16),
             Text(
               _errorMessage ?? 'An error occurred',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                fontFamily: AppTextStyles.albraGroteskFontFamily,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.error,
               ),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _loadUserProfile,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.buttonRed,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100),
-                ),
-              ),
-              child: const Text('Try Again'),
+              child: const Text('Retry'),
             ),
           ],
         ),
@@ -192,173 +187,223 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Main profile content when data is loaded
   Widget _buildProfileContent() {
+    final theme = Theme.of(context);
     return RefreshIndicator(
       onRefresh: _loadUserProfile,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header with back button and settings button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   GestureDetector(
-                    onTap: () => Navigator.pushNamed(context, '/main'),
+                    onTap: widget.onBack ?? () => Navigator.pop(context),
                     child: Container(
                       width: 48,
                       height: 48,
-                      decoration: const ShapeDecoration(
-                        color: Color(0xFF191714),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(100))),
-                      ),
-                      child: const Icon(Icons.arrow_back, color: Colors.white),
-                    ),
-                  ),
-                  const Text(
-                    'My Profile',
-                    style: TextStyle(
-                      color: Color(0xFF191714),
-                      fontSize: 16,
-                      fontFamily: AppTextStyles.albraGroteskFontFamily,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Container(
-                    width: 64,
-                    height: 39,
-                    decoration: const ShapeDecoration(
-                      color: Color(0xFF191714),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(100))),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'Save',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontFamily: AppTextStyles.albraGroteskFontFamily,
-                          fontWeight: FontWeight.w400,
+                      decoration: ShapeDecoration(
+                        color: theme.colorScheme.surface,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(100)),
                         ),
+                      ),
+                      child: Icon(
+                        Icons.arrow_back,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    'Profile',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontFamily: AppTextStyles.albraGroteskFontFamily,
+                    ),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsScreen(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: ShapeDecoration(
+                        color: theme.colorScheme.surface,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(100)),
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.settings,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: 162,
-                  height: 162,
-                  decoration: ShapeDecoration(
-                    image: const DecorationImage(
-                      image: AssetImage("images/user.png"),
-                      fit: BoxFit.fill,
+            // Profile image and user info
+            Center(
+              child: Column(
+                children: [
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: theme.colorScheme.surface,
+                      image: const DecorationImage(
+                        image: AssetImage('images/user.png'),
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   ),
-                ),
-                Positioned(
-                  right: 0,
-                  top: 5,
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: const ShapeDecoration(
-                      color: Color(0xFF191714),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(100))),
+                  const SizedBox(height: 16),
+                  Text(
+                    _userData['name'] ?? 'User Name',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontFamily: AppTextStyles.albraFontFamily,
                     ),
-                    child: const Icon(Icons.edit, color: Colors.white, size: 20),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    _userData['email'] ?? 'email@example.com',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onBackground.withOpacity(0.6),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 32),
+            // Stats row
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildStatCard('Favorites', _favoritesCount.toString(), Icons.favorite),
-                  _buildStatCard('In Progress', _inProgressCount.toString(), Icons.book),
+                  _buildStatCard(
+                    'Favorites',
+                    _favoritesCount.toString(),
+                    Icons.favorite,
+                  ),
+                  _buildStatCard(
+                    'In Progress',
+                    _inProgressCount.toString(),
+                    Icons.book,
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 32),
+            // Profile details
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildProfileRow('Username', _userData['username'] ?? 'Not set'),
-                  _buildProfileRow('Email', _userData['email'] ?? 'Not set'),
-                  _buildProfileRow('Member Since', _formatDate(_userData['createdAt'])),
+                  Text(
+                    'Profile Details',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontFamily: AppTextStyles.albraGroteskFontFamily,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildProfileRow(
+                          'Joined',
+                          _formatDate(_userData['createdAt']),
+                        ),
+                        _buildProfileRow(
+                          'Last Active',
+                          _formatDate(_userData['lastActive']),
+                        ),
+                        _buildProfileRow(
+                          'Books Read',
+                          '${_userData['booksRead'] ?? 0}',
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 32),
+            // Logout button
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
+              padding: const EdgeInsets.all(20),
               child: SizedBox(
                 width: double.infinity,
-                height: 50,
                 child: ElevatedButton(
                   onPressed: _handleLogout,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade700,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                  ),
-                  child: const Text(
-                    'Logout',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: AppTextStyles.albraGroteskFontFamily,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
+                    backgroundColor: theme.colorScheme.error,
+                    foregroundColor: theme.colorScheme.onError,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
                     ),
                   ),
+                  child: const Text('Logout'),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
+  // Widget for user stats cards (favorites, in-progress)
   Widget _buildStatCard(String title, String value, IconData icon) {
+    final theme = Theme.of(context);
     return Container(
       width: 130,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: theme.shadowColor.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
         children: [
-          Icon(icon, color: AppColors.accentRed, size: 28),
+          Icon(icon, color: theme.colorScheme.primary),
           const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+            style: theme.textTheme.headlineSmall?.copyWith(
               fontFamily: AppTextStyles.albraFontFamily,
-              color: Color(0xFF191714),
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 4),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 14,
-              fontFamily: AppTextStyles.albraGroteskFontFamily,
-              color: Colors.grey,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
             ),
           ),
         ],
@@ -367,18 +412,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileRow(String label, String value) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          SizedBox(
-            width: 120,
-            child: Text(label, style: AppTextStyles.labelStyle),
+          Text(
+            label,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
+            ),
           ),
-          SizedBox(
-            width: 140,
-            child: Text(value, style: AppTextStyles.valueStyle),
+          Text(
+            value,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),

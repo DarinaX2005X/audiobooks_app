@@ -15,12 +15,7 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   bool isSearching = false;
   final TextEditingController _searchController = TextEditingController();
-  final List<Book> searchResults = [
-    // Book(title: 'Sorcerer’s Stone', author: 'J.K Rowling', genre: 'Fantasy', coverUrl: 'images/book1.png'),
-    // Book(title: 'Chamber of Secrets', author: 'J.K Rowling', genre: 'Fantasy', coverUrl: 'images/book2.png'),
-    // Book(title: 'Moby Dick', author: 'Herman Melville', genre: 'Drama', coverUrl: 'images/book3.png'),
-    // Book(title: 'The Big Sleep', author: 'Raymond Chandler', genre: 'Detective', coverUrl: 'images/book4.png'),
-  ];
+  final List<Book> searchResults = [];
   List<Book> _filteredResults = [];
 
   @override
@@ -83,44 +78,56 @@ class _SearchScreenState extends State<SearchScreen> {
       if (query.isEmpty) {
         _filteredResults = searchResults;
       } else {
-        _filteredResults = searchResults.where((book) {
-          return book.title.toLowerCase().contains(query) || book.author.toLowerCase().contains(query);
-        }).toList();
+        _filteredResults =
+            searchResults.where((book) {
+              return book.title.toLowerCase().contains(query) ||
+                  book.author.toLowerCase().contains(query);
+            }).toList();
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.lightBackground,
+      backgroundColor: theme.colorScheme.background,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 20,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     GestureDetector(
-                      onTap: () => Navigator.pushNamed(context, '/main'),
+                      onTap: widget.onBack ?? () => Navigator.pop(context),
                       child: Container(
                         width: 48,
                         height: 48,
-                        decoration: const ShapeDecoration(
-                          color: Color(0xFF191714),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(100))),
+                        decoration: ShapeDecoration(
+                          color: theme.colorScheme.surface,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(100),
+                            ),
+                          ),
                         ),
-                        child: const Icon(Icons.arrow_back, color: Colors.white),
+                        child: Icon(
+                          Icons.arrow_back,
+                          color: theme.colorScheme.onSurface,
+                        ),
                       ),
                     ),
-                    const Text(
+                    Text(
                       'Search',
-                      style: TextStyle(
-                        color: Color(0xFF191714),
-                        fontSize: 16,
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
                         fontWeight: FontWeight.w500,
                       ),
@@ -128,11 +135,16 @@ class _SearchScreenState extends State<SearchScreen> {
                     Container(
                       width: 48,
                       height: 48,
-                      decoration: const ShapeDecoration(
-                        color: Color(0xFF191714),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(100))),
+                      decoration: ShapeDecoration(
+                        color: theme.colorScheme.surface,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(100)),
+                        ),
                       ),
-                      child: const Icon(Icons.filter_list, color: Colors.white),
+                      child: Icon(
+                        Icons.filter_list,
+                        color: theme.colorScheme.onSurface,
+                      ),
                     ),
                   ],
                 ),
@@ -142,11 +154,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Explore',
-                      style: TextStyle(
-                        color: Color(0xFF010103),
-                        fontSize: 24,
+                      style: theme.textTheme.headlineSmall?.copyWith(
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
                         fontWeight: FontWeight.w600,
                       ),
@@ -154,17 +164,23 @@ class _SearchScreenState extends State<SearchScreen> {
                     const SizedBox(height: 12),
                     Container(
                       width: 335,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                      decoration: const ShapeDecoration(
-                        color: Color(0xFFF5F5FA),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      decoration: ShapeDecoration(
+                        color: theme.colorScheme.surface.withOpacity(0.9),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                        ),
                       ),
                       child: TextField(
                         controller: _searchController,
-                        decoration: const InputDecoration(
+                        style: TextStyle(color: theme.colorScheme.onSurface),
+                        decoration: InputDecoration(
                           hintText: 'Search Books or Author...',
                           hintStyle: TextStyle(
-                            color: Color(0xFFB8B8C7),
+                            color: theme.colorScheme.onSurface.withOpacity(0.6),
                             fontSize: 14,
                             fontFamily: AppTextStyles.albraGroteskFontFamily,
                             fontWeight: FontWeight.w500,
@@ -175,11 +191,9 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                     const SizedBox(height: 20),
                     if (!isSearching) ...[
-                      const Text(
+                      Text(
                         'Recommended genres',
-                        style: TextStyle(
-                          color: Color(0xFF010103),
-                          fontSize: 16,
+                        style: theme.textTheme.titleMedium?.copyWith(
                           fontFamily: AppTextStyles.albraGroteskFontFamily,
                           fontWeight: FontWeight.w500,
                         ),
@@ -189,49 +203,47 @@ class _SearchScreenState extends State<SearchScreen> {
                       const SizedBox(height: 15),
                       _buildGenreRow(['Fiction', 'Detective']),
                       const SizedBox(height: 20),
-                      const Text(
+                      Text(
                         'Latest search',
-                        style: TextStyle(
-                          color: Color(0xFF010103),
-                          fontSize: 16,
+                        style: theme.textTheme.titleMedium?.copyWith(
                           fontFamily: AppTextStyles.albraGroteskFontFamily,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _buildBookRow(Book(
-                        title: 'Moby Dick',
-                        author: 'Herman Melville',
-                        genre: 'Drama',
-                        coverUrl: 'images/book1.png',
-                        description: 'descr',
-                        fileName: 'filename',
-                      )),
+                      _buildBookRow(
+                        Book(
+                          title: 'Moby Dick',
+                          author: 'Herman Melville',
+                          genre: 'Drama',
+                          coverUrl: 'images/book1.png',
+                          description: 'descr',
+                          fileName: 'filename',
+                        ),
+                      ),
                     ] else ...[
-                      const Text(
+                      Text(
                         'Search results',
-                        style: TextStyle(
-                          color: Color(0xFF010103),
-                          fontSize: 16,
+                        style: theme.textTheme.titleMedium?.copyWith(
                           fontFamily: AppTextStyles.albraGroteskFontFamily,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 16),
                       if (_filteredResults.isEmpty)
-                        const Center(
+                        Center(
                           child: Text(
                             'No results found',
-                            style: TextStyle(
-                              color: Color(0xFF191714),
-                              fontSize: 16,
+                            style: theme.textTheme.bodyLarge?.copyWith(
                               fontFamily: AppTextStyles.albraGroteskFontFamily,
                               fontWeight: FontWeight.w400,
                             ),
                           ),
                         )
                       else
-                        ..._filteredResults.map((book) => _buildBookRow(book)).toList(),
+                        ..._filteredResults
+                            .map((book) => _buildBookRow(book))
+                            .toList(),
                     ],
                   ],
                 ),
@@ -244,6 +256,7 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildGenreRow(List<String> genres) {
+    final theme = Theme.of(context);
     return SizedBox(
       height: 50,
       child: ListView.builder(
@@ -254,16 +267,16 @@ class _SearchScreenState extends State<SearchScreen> {
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 7.5),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: const ShapeDecoration(
-              color: Color(0xFFE7E0CB),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+            decoration: ShapeDecoration(
+              color: theme.colorScheme.surface.withOpacity(0.8),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+              ),
             ),
             child: Center(
               child: Text(
                 genre,
-                style: const TextStyle(
-                  color: Color(0xFF191815),
-                  fontSize: 16,
+                style: theme.textTheme.bodyMedium?.copyWith(
                   fontFamily: AppTextStyles.albraGroteskFontFamily,
                   fontWeight: FontWeight.w400,
                 ),
@@ -276,25 +289,31 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildBookRow(Book book) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: GestureDetector(
         onTap: () {
-          Navigator.pushNamed(context, '/details', arguments: book);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => DetailsScreen(book: book)),
+          );
         },
         child: Row(
           children: [
             Container(
               width: 160,
               height: 235,
-              decoration: const ShapeDecoration(
-                color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+              decoration: ShapeDecoration(
+                color: theme.colorScheme.surface,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
                 shadows: [
                   BoxShadow(
-                    color: Color(0x19000000),
+                    color: theme.shadowColor.withOpacity(0.1),
                     blurRadius: 22,
-                    offset: Offset(-12, 10),
+                    offset: const Offset(-12, 10),
                     spreadRadius: 0,
                   ),
                 ],
@@ -310,18 +329,14 @@ class _SearchScreenState extends State<SearchScreen> {
               children: [
                 Text(
                   book.title,
-                  style: const TextStyle(
-                    color: Color(0xFF191714),
-                    fontSize: 16,
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontFamily: AppTextStyles.albraFontFamily,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
                   book.author,
-                  style: const TextStyle(
-                    color: Color(0xFF191714),
-                    fontSize: 14,
+                  style: theme.textTheme.bodyMedium?.copyWith(
                     fontFamily: AppTextStyles.albraGroteskFontFamily,
                     fontWeight: FontWeight.w400,
                   ),
