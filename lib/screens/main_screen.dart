@@ -6,6 +6,7 @@ import 'search_screen.dart';
 import 'library_screen.dart';
 import 'profile_screen.dart';
 import 'details_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -17,14 +18,25 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   final List<Book> books = [];
-  final List<String> categories = ['All'];
-  String selectedCategory = 'All';
+  final List<String> categories = [];
+  String selectedCategory = '';
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (categories.isEmpty) {
+      setState(() {
+        categories.add('All'); // Hardcoded "All" instead of localized
+        selectedCategory = 'All';
+      });
+    }
   }
 
   Future<void> _loadData() async {
@@ -39,13 +51,12 @@ class _MainScreenState extends State<MainScreen> {
       setState(() {
         categories
           ..clear()
-          ..add('All')
+          ..add('All') // Hardcoded "All"
           ..addAll(fetchedCategories.map((category) => category.name));
-
         books
           ..clear()
           ..addAll(fetchedBooks);
-
+        selectedCategory = 'All';
         isLoading = false;
       });
     } catch (e) {
@@ -53,9 +64,9 @@ class _MainScreenState extends State<MainScreen> {
         setState(() {
           isLoading = false;
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${AppLocalizations.of(context).errorOccurred}: $e')),
+        );
       }
     }
   }
@@ -78,11 +89,10 @@ class _MainScreenState extends State<MainScreen> {
             if (loadingProgress == null) return child;
             return Center(
               child: CircularProgressIndicator(
-                value:
-                    loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                            loadingProgress.expectedTotalBytes!
-                        : null,
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                    loadingProgress.expectedTotalBytes!
+                    : null,
               ),
             );
           },
@@ -94,7 +104,6 @@ class _MainScreenState extends State<MainScreen> {
           },
         );
       }
-
       return Image.asset(
         coverUrl,
         fit: BoxFit.cover,
@@ -115,22 +124,20 @@ class _MainScreenState extends State<MainScreen> {
 
   List<Widget> _buildBookSections() {
     final theme = Theme.of(context);
-
     if (books.isEmpty) {
       return [
         Center(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
-            child: Text('No books available', style: theme.textTheme.bodyLarge),
+            child: Text(AppLocalizations.of(context).noBooksAvailable, style: theme.textTheme.bodyLarge),
           ),
         ),
       ];
     }
 
     Map<String, List<Book>> booksByGenre = {};
-
     for (var book in books) {
-      if (selectedCategory == 'All' || book.genre == selectedCategory) {
+      if (selectedCategory == 'All' || book.genre == selectedCategory) { // Hardcoded "All"
         final genre = book.genre.isNotEmpty ? book.genre : 'Uncategorized';
         booksByGenre.putIfAbsent(genre, () => []).add(book);
       }
@@ -142,7 +149,7 @@ class _MainScreenState extends State<MainScreen> {
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Text(
-              'No books found in the "$selectedCategory" category',
+              AppLocalizations.of(context).noBooksInCategory(selectedCategory),
               style: theme.textTheme.bodyLarge,
             ),
           ),
@@ -151,7 +158,6 @@ class _MainScreenState extends State<MainScreen> {
     }
 
     List<Widget> sections = [];
-
     booksByGenre.forEach((genre, genreBooks) {
       sections.add(
         Column(
@@ -168,7 +174,7 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 ),
                 Text(
-                  'See all',
+                  AppLocalizations.of(context).seeAll,
                   style: TextStyle(
                     color: theme.colorScheme.primary,
                     fontSize: 14,
@@ -182,86 +188,77 @@ class _MainScreenState extends State<MainScreen> {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children:
-                    genreBooks.map((book) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 18),
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => DetailsScreen(book: book),
+                children: genreBooks.map((book) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 18),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DetailsScreen(book: book),
+                          ),
+                        );
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 160,
+                            height: 235,
+                            decoration: ShapeDecoration(
+                              color: theme.colorScheme.surface,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            );
-                          },
-                          child: Column(
+                              shadows: [
+                                BoxShadow(
+                                  color: theme.shadowColor.withOpacity(0.1),
+                                  blurRadius: 22,
+                                  offset: const Offset(-12, 10),
+                                  spreadRadius: 0,
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: _buildBookCover(book),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
+                              SizedBox(
                                 width: 160,
-                                height: 235,
-                                decoration: ShapeDecoration(
-                                  color: theme.colorScheme.surface,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                child: Text(
+                                  book.title,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontFamily: AppTextStyles.albraFontFamily,
+                                    fontWeight: FontWeight.w500,
                                   ),
-                                  shadows: [
-                                    BoxShadow(
-                                      color: theme.shadowColor.withOpacity(0.1),
-                                      blurRadius: 22,
-                                      offset: const Offset(-12, 10),
-                                      spreadRadius: 0,
-                                    ),
-                                  ],
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: _buildBookCover(book),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(height: 14),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                    width: 160,
-                                    child: Text(
-                                      book.title,
-                                      style: theme.textTheme.titleMedium
-                                          ?.copyWith(
-                                            fontFamily:
-                                                AppTextStyles.albraFontFamily,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                              SizedBox(
+                                width: 160,
+                                child: Text(
+                                  book.author,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontFamily: AppTextStyles.albraGroteskFontFamily,
+                                    fontWeight: FontWeight.w400,
+                                    color: theme.colorScheme.onBackground.withOpacity(0.7),
                                   ),
-                                  SizedBox(
-                                    width: 160,
-                                    child: Text(
-                                      book.author,
-                                      style: theme.textTheme.bodyMedium
-                                          ?.copyWith(
-                                            fontFamily:
-                                                AppTextStyles
-                                                    .albraGroteskFontFamily,
-                                            fontWeight: FontWeight.w400,
-                                            color: theme
-                                                .colorScheme
-                                                .onBackground
-                                                .withOpacity(0.7),
-                                          ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                      );
-                    }).toList(),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
             ),
             const SizedBox(height: 24),
@@ -269,13 +266,11 @@ class _MainScreenState extends State<MainScreen> {
         ),
       );
     });
-
     return sections;
   }
 
   Widget _buildMainContent() {
     final theme = Theme.of(context);
-
     return RefreshIndicator(
       onRefresh: _loadData,
       child: SingleChildScrollView(
@@ -312,41 +307,12 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                               const SizedBox(width: 12),
                               Flexible(
-                                child: Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: 'Hey, ',
-                                        style: theme.textTheme.headlineSmall
-                                            ?.copyWith(
-                                              fontFamily:
-                                                  AppTextStyles.albraFontFamily,
-                                              fontWeight: FontWeight.w500,
-                                              height: 1.60,
-                                            ),
-                                      ),
-                                      TextSpan(
-                                        text: 'John!\n',
-                                        style: theme.textTheme.headlineSmall
-                                            ?.copyWith(
-                                              color: theme.colorScheme.primary,
-                                              fontFamily:
-                                                  AppTextStyles.albraFontFamily,
-                                              fontWeight: FontWeight.w500,
-                                              height: 1.60,
-                                            ),
-                                      ),
-                                      TextSpan(
-                                        text: 'What will you listen today?',
-                                        style: theme.textTheme.headlineSmall
-                                            ?.copyWith(
-                                              fontFamily:
-                                                  AppTextStyles.albraFontFamily,
-                                              fontWeight: FontWeight.w500,
-                                              height: 1.60,
-                                            ),
-                                      ),
-                                    ],
+                                child: Text(
+                                  AppLocalizations.of(context).heyUser('John'),
+                                  style: theme.textTheme.headlineSmall?.copyWith(
+                                    fontFamily: AppTextStyles.albraFontFamily,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.60,
                                   ),
                                 ),
                               ),
@@ -375,57 +341,43 @@ class _MainScreenState extends State<MainScreen> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children:
-                            categories.map((category) {
-                              bool isSelected = selectedCategory == category;
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      selectedCategory = category;
-                                    });
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 14,
-                                    ),
-                                    decoration: ShapeDecoration(
-                                      color:
-                                          isSelected
-                                              ? theme.colorScheme.surface
-                                              : theme.colorScheme.surface
-                                                  .withOpacity(0.5),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          100,
-                                        ),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      category,
-                                      style: theme.textTheme.bodyMedium
-                                          ?.copyWith(
-                                            color:
-                                                isSelected
-                                                    ? theme
-                                                        .colorScheme
-                                                        .onSurface
-                                                    : theme
-                                                        .colorScheme
-                                                        .onSurface
-                                                        .withOpacity(0.7),
-                                            fontFamily:
-                                                AppTextStyles
-                                                    .albraGroteskFontFamily,
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                    ),
+                        children: categories.map((category) {
+                          bool isSelected = selectedCategory == category;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedCategory = category;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 14,
+                                ),
+                                decoration: ShapeDecoration(
+                                  color: isSelected
+                                      ? theme.colorScheme.surface
+                                      : theme.colorScheme.surface.withOpacity(0.5),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(100),
                                   ),
                                 ),
-                              );
-                            }).toList(),
+                                child: Text(
+                                  category,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: isSelected
+                                        ? theme.colorScheme.onSurface
+                                        : theme.colorScheme.onSurface.withOpacity(0.7),
+                                    fontFamily: AppTextStyles.albraGroteskFontFamily,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -451,7 +403,6 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     Widget currentScreen;
     switch (_selectedIndex) {
       case 0:
@@ -478,7 +429,10 @@ class _MainScreenState extends State<MainScreen> {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
-      body: currentScreen,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: currentScreen,
+      ),
       bottomNavigationBar: Container(
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.all(13),
@@ -525,10 +479,9 @@ class _MainScreenState extends State<MainScreen> {
         ),
         child: Icon(
           icon,
-          color:
-              isSelected
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.onSurface,
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.onSurface,
           size: 24,
         ),
       ),

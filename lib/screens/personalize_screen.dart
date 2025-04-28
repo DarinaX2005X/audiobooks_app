@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/theme_constants.dart';
+import '../l10n/app_localizations.dart';
 import 'main_screen.dart';
 
 class PersonalizeScreen extends StatefulWidget {
@@ -23,11 +24,13 @@ class _PersonalizeScreenState extends State<PersonalizeScreen> {
     'Action',
     'Thriller',
   ];
+
   final List<String> selectedGenres = [];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
@@ -56,7 +59,7 @@ class _PersonalizeScreenState extends State<PersonalizeScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                'Personalize Suggestion',
+                loc.personalizeSuggestion,
                 style: theme.textTheme.displaySmall?.copyWith(
                   fontFamily: AppTextStyles.albraFontFamily,
                   fontWeight: FontWeight.w500,
@@ -64,7 +67,7 @@ class _PersonalizeScreenState extends State<PersonalizeScreen> {
               ),
               const SizedBox(height: 10),
               Text(
-                'Choose min. 3 genres, we will give you more that relate to it.',
+                loc.chooseGenres,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontFamily: AppTextStyles.albraGroteskFontFamily,
                   fontWeight: FontWeight.w400,
@@ -74,47 +77,44 @@ class _PersonalizeScreenState extends State<PersonalizeScreen> {
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
-                children:
-                    genres.map((genre) {
-                      bool isSelected = selectedGenres.contains(genre);
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            if (isSelected) {
-                              selectedGenres.remove(genre);
-                            } else {
-                              selectedGenres.add(genre);
-                            }
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          decoration: ShapeDecoration(
-                            color:
-                                isSelected
-                                    ? theme.colorScheme.primary
-                                    : theme.colorScheme.surface,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          child: Text(
-                            genre,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontFamily: AppTextStyles.albraGroteskFontFamily,
-                              fontWeight: FontWeight.w400,
-                              color:
-                                  isSelected
-                                      ? theme.colorScheme.onPrimary
-                                      : theme.colorScheme.onSurface,
-                            ),
-                          ),
+                children: genres.map((genre) {
+                  final isSelected = selectedGenres.contains(genre);
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        if (isSelected) {
+                          selectedGenres.remove(genre);
+                        } else {
+                          selectedGenres.add(genre);
+                        }
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: ShapeDecoration(
+                        color: isSelected
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.surface,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
                         ),
-                      );
-                    }).toList(),
+                      ),
+                      child: Text(
+                        genre,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontFamily: AppTextStyles.albraGroteskFontFamily,
+                          fontWeight: FontWeight.w400,
+                          color: isSelected
+                              ? theme.colorScheme.onPrimary
+                              : theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
               const Spacer(),
               Row(
@@ -133,7 +133,7 @@ class _PersonalizeScreenState extends State<PersonalizeScreen> {
                       foregroundColor: theme.colorScheme.primary,
                     ),
                     child: Text(
-                      'Skip',
+                      loc.skip,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
                         fontWeight: FontWeight.w500,
@@ -141,30 +141,29 @@ class _PersonalizeScreenState extends State<PersonalizeScreen> {
                     ),
                   ),
                   ElevatedButton(
-                    onPressed:
-                        selectedGenres.length >= 3
-                            ? () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const MainScreen(),
-                                ),
-                              );
-                            }
-                            : null,
+                    onPressed: selectedGenres.length >= 3
+                        ? () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MainScreen(),
+                        ),
+                      );
+                    }
+                        : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: theme.colorScheme.primary,
                       foregroundColor: theme.colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(100),
                       ),
-                      disabledBackgroundColor: theme.colorScheme.primary
-                          .withOpacity(0.5),
-                      disabledForegroundColor: theme.colorScheme.onPrimary
-                          .withOpacity(0.7),
+                      disabledBackgroundColor:
+                      theme.colorScheme.primary.withOpacity(0.5),
+                      disabledForegroundColor:
+                      theme.colorScheme.onPrimary.withOpacity(0.7),
                     ),
                     child: Text(
-                      'Continue',
+                      loc.continueText,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
                         fontWeight: FontWeight.w500,

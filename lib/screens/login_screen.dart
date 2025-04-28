@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/theme_constants.dart';
 import '../services/auth_service.dart';
+import '../l10n/app_localizations.dart';
 import 'main_screen.dart';
 import 'register_screen.dart';
 import 'forget_password_screen.dart';
@@ -27,16 +28,18 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
+    final loc = AppLocalizations.of(context);
+
     if (_emailController.text.trim().isEmpty) {
       setState(() {
-        _errorMessage = 'Email is required';
+        _errorMessage = loc.emailRequired;
       });
       return;
     }
 
     if (_passwordController.text.isEmpty) {
       setState(() {
-        _errorMessage = 'Password is required';
+        _errorMessage = loc.passwordRequired;
       });
       return;
     }
@@ -54,11 +57,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (success) {
         if (!mounted) return;
-
         if (!_isRemembered) {
           // Handle non-remembered login case
         }
-
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainScreen()),
@@ -66,14 +67,14 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         if (!mounted) return;
         setState(() {
-          _errorMessage = 'Invalid email or password';
+          _errorMessage = loc.invalidCredentials;
           _isLoading = false;
         });
       }
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = 'An error occurred. Please try again.';
+        _errorMessage = loc.errorOccurred;
         _isLoading = false;
       });
     }
@@ -82,26 +83,26 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04), // 4% of screen width
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 50),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.06), // 6% of screen height
                 Text(
-                  'Login',
+                  loc.login,
                   style: theme.textTheme.displaySmall?.copyWith(
                     fontFamily: AppTextStyles.albraFontFamily,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 20),
-
+                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                 if (_errorMessage != null)
                   Container(
                     padding: const EdgeInsets.all(10),
@@ -118,14 +119,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: theme.colorScheme.surface,
-                    hintText: 'Email',
+                    hintText: loc.email,
                     hintStyle: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurface.withOpacity(0.6),
                       fontFamily: AppTextStyles.albraGroteskFontFamily,
@@ -147,14 +147,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(color: theme.colorScheme.onSurface),
                 ),
                 const SizedBox(height: 10),
-
                 TextField(
                   controller: _passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: theme.colorScheme.surface,
-                    hintText: 'Password',
+                    hintText: loc.password,
                     hintStyle: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurface.withOpacity(0.6),
                       fontFamily: AppTextStyles.albraGroteskFontFamily,
@@ -177,7 +176,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   onSubmitted: (_) => _handleLogin(),
                 ),
                 const SizedBox(height: 10),
-
                 Row(
                   children: [
                     Checkbox(
@@ -189,19 +187,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                       activeColor: theme.colorScheme.primary,
                     ),
-                    Text(
-                      'Remember me',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontFamily: AppTextStyles.albraGroteskFontFamily,
-                        fontWeight: FontWeight.w400,
+                    Flexible(
+                      child: Text(
+                        loc.rememberMe,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontFamily: AppTextStyles.albraGroteskFontFamily,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-
+                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                 SizedBox(
-                  width: double.infinity,
+                  width: MediaQuery.of(context).size.width * 0.9, // 90% of screen width
                   height: 50,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleLogin,
@@ -212,34 +212,29 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(100),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      disabledBackgroundColor: theme.colorScheme.primary
-                          .withOpacity(0.5),
-                      disabledForegroundColor: theme.colorScheme.onPrimary
-                          .withOpacity(0.7),
+                      disabledBackgroundColor: theme.colorScheme.primary.withOpacity(0.5),
+                      disabledForegroundColor: theme.colorScheme.onPrimary.withOpacity(0.7),
                     ),
-                    child:
-                        _isLoading
-                            ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: theme.colorScheme.onPrimary,
-                                strokeWidth: 2,
-                              ),
-                            )
-                            : Text(
-                              'Login',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontFamily:
-                                    AppTextStyles.albraGroteskFontFamily,
-                                fontWeight: FontWeight.w500,
-                                color: theme.colorScheme.onPrimary,
-                              ),
-                            ),
+                    child: _isLoading
+                        ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: theme.colorScheme.onPrimary,
+                        strokeWidth: 2,
+                      ),
+                    )
+                        : Text(
+                      loc.login,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontFamily: AppTextStyles.albraGroteskFontFamily,
+                        fontWeight: FontWeight.w500,
+                        color: theme.colorScheme.onPrimary,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
-
                 TextButton(
                   onPressed: () {
                     Navigator.push(
@@ -253,14 +248,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     foregroundColor: theme.colorScheme.primary,
                   ),
                   child: Text(
-                    'Don\'t have an account? Register',
+                    loc.dontHaveAccount,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontFamily: AppTextStyles.albraGroteskFontFamily,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
-
                 TextButton(
                   onPressed: () {
                     Navigator.push(
@@ -274,13 +268,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     foregroundColor: theme.colorScheme.primary,
                   ),
                   child: Text(
-                    'Forget Password?',
+                    loc.forgetPassword,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontFamily: AppTextStyles.albraGroteskFontFamily,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
               ],
             ),
           ),

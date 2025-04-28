@@ -2,6 +2,8 @@ import 'package:audiobooks_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/login_screen.dart';
@@ -21,12 +23,12 @@ void main() async {
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight, // Added for landscape support
   ]);
   await AuthService.init();
-
   final settingsProvider = SettingsProvider();
   await settingsProvider.init();
-
   runApp(
     ChangeNotifierProvider(
       create: (_) => settingsProvider,
@@ -41,11 +43,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<SettingsProvider>(context);
+
     return MaterialApp(
       title: 'Audio Books App',
       debugShowCheckedModeBanner: false,
       themeMode: settings.themeMode,
       locale: settings.locale,
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('ru'),
+        Locale('kk'),
+      ],
       theme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: const Color(0xFFF1EEE3),
@@ -106,10 +120,9 @@ class MyApp extends StatelessWidget {
         '/main': (context) => const MainScreen(),
         '/forget_password': (context) => const ForgetPasswordScreen(),
         '/settings': (context) => const SettingsScreen(),
-        '/details':
-            (context) => DetailsScreen(
-              book: ModalRoute.of(context)!.settings.arguments as Book,
-            ),
+        '/details': (context) => DetailsScreen(
+          book: ModalRoute.of(context)!.settings.arguments as Book,
+        ),
         '/text': (context) => const TextScreen(),
       },
     );

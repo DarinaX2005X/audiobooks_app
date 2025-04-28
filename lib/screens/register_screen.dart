@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/theme_constants.dart';
 import '../services/auth_service.dart';
+import '../l10n/app_localizations.dart';
 import 'login_screen.dart';
 import 'personalize_screen.dart';
 
@@ -16,7 +17,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
   bool _isAccepted = false;
   bool _isLoading = false;
   String? _errorMessage;
@@ -36,13 +36,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _handleRegister() async {
+    final loc = AppLocalizations.of(context);
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
     if (!_isAccepted) {
       setState(() {
-        _errorMessage = 'Please accept the terms and conditions';
+        _errorMessage = loc.acceptTerms;
       });
       return;
     }
@@ -75,7 +77,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = 'An error occurred. Please try again.';
+        _errorMessage = loc.errorOccurred;
         _isLoading = false;
       });
     }
@@ -84,27 +86,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
             child: Form(
               key: _formKey,
               child: Column(
                 children: [
-                  const SizedBox(height: 40),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                   Text(
-                    'Register',
+                    loc.register,
                     style: theme.textTheme.displaySmall?.copyWith(
                       fontFamily: AppTextStyles.albraFontFamily,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 20),
-
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                   if (_errorMessage != null)
                     Container(
                       padding: const EdgeInsets.all(10),
@@ -121,13 +123,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                     ),
-
                   TextFormField(
                     controller: _usernameController,
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: theme.colorScheme.surface,
-                      hintText: 'Username',
+                      hintText: loc.username,
                       hintStyle: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurface.withOpacity(0.6),
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
@@ -135,40 +136,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.outline,
-                        ),
+                        borderSide: BorderSide(color: theme.colorScheme.outline),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.outline,
-                        ),
+                        borderSide: BorderSide(color: theme.colorScheme.outline),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.primary,
-                        ),
+                        borderSide: BorderSide(color: theme.colorScheme.primary),
                       ),
                     ),
                     style: TextStyle(color: theme.colorScheme.onSurface),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Username is required';
+                        return loc.usernameRequired;
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 10),
-
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: theme.colorScheme.surface,
-                      hintText: 'Email',
+                      hintText: loc.email,
                       hintStyle: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurface.withOpacity(0.6),
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
@@ -176,43 +170,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.outline,
-                        ),
+                        borderSide: BorderSide(color: theme.colorScheme.outline),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.outline,
-                        ),
+                        borderSide: BorderSide(color: theme.colorScheme.outline),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.primary,
-                        ),
+                        borderSide: BorderSide(color: theme.colorScheme.primary),
                       ),
                     ),
                     style: TextStyle(color: theme.colorScheme.onSurface),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Email is required';
+                        return loc.emailRequired;
                       }
                       if (!_isValidEmail(value)) {
-                        return 'Please enter a valid email';
+                        return loc.invalidEmail;
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 10),
-
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: theme.colorScheme.surface,
-                      hintText: 'Password',
+                      hintText: loc.password,
                       hintStyle: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurface.withOpacity(0.6),
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
@@ -220,27 +207,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.outline,
-                        ),
+                        borderSide: BorderSide(color: theme.colorScheme.outline),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.outline,
-                        ),
+                        borderSide: BorderSide(color: theme.colorScheme.outline),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.primary,
-                        ),
+                        borderSide: BorderSide(color: theme.colorScheme.primary),
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility
-                              : Icons.visibility_off,
+                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
                           color: theme.colorScheme.onSurface.withOpacity(0.6),
                         ),
                         onPressed: () {
@@ -253,33 +232,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     style: TextStyle(color: theme.colorScheme.onSurface),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Password is required';
+                        return loc.passwordRequired;
                       }
                       if (value.length < 8) {
-                        return 'Password must be at least 8 characters';
+                        return loc.passwordMinLength;
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 10),
-
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Padding(
                       padding: const EdgeInsets.only(left: 8.0),
                       child: Text(
-                        'Password must be at least 8 characters',
+                        loc.passwordMinLength,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onBackground.withOpacity(
-                            0.6,
-                          ),
+                          color: theme.colorScheme.onBackground.withOpacity(0.6),
                           fontFamily: AppTextStyles.albraGroteskFontFamily,
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 10),
-
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -296,57 +271,52 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Padding(
                           padding: const EdgeInsets.only(top: 15),
                           child: Text(
-                            'By signing up, you agree to the Terms, Data Policy and Cookies Policy.',
+                            loc.termsAndConditions,
                             style: theme.textTheme.bodySmall?.copyWith(
                               fontFamily: AppTextStyles.albraGroteskFontFamily,
                               fontWeight: FontWeight.w400,
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                   SizedBox(
-                    width: double.infinity,
+                    width: MediaQuery.of(context).size.width * 0.9,
                     height: 50,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _handleRegister,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
                         foregroundColor: theme.colorScheme.onPrimary,
-                        disabledBackgroundColor: theme.colorScheme.primary
-                            .withOpacity(0.5),
-                        disabledForegroundColor: theme.colorScheme.onPrimary
-                            .withOpacity(0.7),
+                        disabledBackgroundColor: theme.colorScheme.primary.withOpacity(0.5),
+                        disabledForegroundColor: theme.colorScheme.onPrimary.withOpacity(0.7),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(100),
                         ),
                       ),
-                      child:
-                          _isLoading
-                              ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  color: theme.colorScheme.onPrimary,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                              : Text(
-                                'Register',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontFamily:
-                                      AppTextStyles.albraGroteskFontFamily,
-                                  fontWeight: FontWeight.w500,
-                                  color: theme.colorScheme.onPrimary,
-                                ),
-                              ),
+                      child: _isLoading
+                          ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: theme.colorScheme.onPrimary,
+                          strokeWidth: 2,
+                        ),
+                      )
+                          : Text(
+                        loc.register,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontFamily: AppTextStyles.albraGroteskFontFamily,
+                          fontWeight: FontWeight.w500,
+                          color: theme.colorScheme.onPrimary,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 15),
-
                   TextButton(
                     onPressed: () {
                       Navigator.pushReplacement(
@@ -360,14 +330,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       foregroundColor: theme.colorScheme.primary,
                     ),
                     child: Text(
-                      'Already have an account? Login',
+                      loc.alreadyHaveAccount, // Changed from dontHaveAccount
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.02),
                 ],
               ),
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../constants/theme_constants.dart';
+import '../l10n/app_localizations.dart';
 import '../services/user_service.dart';
 import '../services/auth_service.dart';
 import 'settings_screen.dart';
@@ -65,7 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'An error occurred loading your profile';
+          _errorMessage = AppLocalizations.of(context).errorLoadingProfile;
         });
       }
     }
@@ -85,20 +86,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Handle user logout
   Future<void> _handleLogout() async {
+    final loc = AppLocalizations.of(context);
     // Show loading dialog
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return const Dialog(
+        return Dialog(
           child: Padding(
-            padding: EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(20.0),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(),
-                SizedBox(width: 20),
-                Text("Logging out..."),
+                const CircularProgressIndicator(),
+                const SizedBox(width: 20),
+                Text(loc.loggingOut),
               ],
             ),
           ),
@@ -117,13 +119,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (success) {
         // Navigate to login screen
-        Navigator.of(
-          context,
-        ).pushNamedAndRemoveUntil('/login', (route) => false);
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
       } else {
         // Show error
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Logout failed. Please try again.')),
+          SnackBar(content: Text(loc.logoutFailed)),
         );
       }
     } catch (e) {
@@ -134,7 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       // Show error
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('An error occurred. Please try again.')),
+        SnackBar(content: Text(loc.errorOccurred)),
       );
     }
   }
@@ -142,16 +142,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
       body: SafeArea(
-        child:
-            _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _errorMessage != null
-                ? _buildErrorView()
-                : _buildProfileContent(),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _errorMessage != null
+            ? _buildErrorView()
+            : _buildProfileContent(),
       ),
     );
   }
@@ -159,6 +159,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Error view when profile loading fails
   Widget _buildErrorView() {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -168,7 +169,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
             const SizedBox(height: 16),
             Text(
-              _errorMessage ?? 'An error occurred',
+              _errorMessage ?? loc.errorOccurred,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: theme.colorScheme.error,
               ),
@@ -177,7 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _loadUserProfile,
-              child: const Text('Retry'),
+              child: Text(loc.retry),
             ),
           ],
         ),
@@ -188,6 +189,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Main profile content when data is loaded
   Widget _buildProfileContent() {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
     return RefreshIndicator(
       onRefresh: _loadUserProfile,
       child: SingleChildScrollView(
@@ -219,7 +221,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(width: 16),
                   Text(
-                    'Profile',
+                    loc.profile,
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontFamily: AppTextStyles.albraGroteskFontFamily,
                     ),
@@ -227,12 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Spacer(),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SettingsScreen(),
-                        ),
-                      );
+                      Navigator.pushNamed(context, '/settings');
                     },
                     child: Container(
                       width: 48,
@@ -293,12 +290,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildStatCard(
-                    'Favorites',
+                    loc.favorites,
                     _favoritesCount.toString(),
                     Icons.favorite,
                   ),
                   _buildStatCard(
-                    'In Progress',
+                    loc.inProgress,
                     _inProgressCount.toString(),
                     Icons.book,
                   ),
@@ -313,7 +310,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Profile Details',
+                    loc.profileDetails,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontFamily: AppTextStyles.albraGroteskFontFamily,
                       fontWeight: FontWeight.w600,
@@ -329,15 +326,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Column(
                       children: [
                         _buildProfileRow(
-                          'Joined',
+                          loc.joined,
                           _formatDate(_userData['createdAt']),
                         ),
                         _buildProfileRow(
-                          'Last Active',
+                          loc.lastActive,
                           _formatDate(_userData['lastActive']),
                         ),
                         _buildProfileRow(
-                          'Books Read',
+                          loc.booksRead,
                           '${_userData['booksRead'] ?? 0}',
                         ),
                       ],
@@ -362,7 +359,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       borderRadius: BorderRadius.circular(100),
                     ),
                   ),
-                  child: const Text('Logout'),
+                  child: Text(loc.logout),
                 ),
               ),
             ),

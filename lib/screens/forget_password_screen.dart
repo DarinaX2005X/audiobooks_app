@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/theme_constants.dart';
+import '../l10n/app_localizations.dart';
 import 'login_screen.dart';
 
 class ForgetPasswordScreen extends StatelessWidget {
@@ -8,6 +9,7 @@ class ForgetPasswordScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
@@ -18,19 +20,18 @@ class ForgetPasswordScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Forget Password',
+                loc.forgetPassword,
                 style: theme.textTheme.displaySmall?.copyWith(
                   fontFamily: AppTextStyles.albraFontFamily,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 20),
-
               TextField(
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: theme.colorScheme.surface,
-                  hintText: 'Email',
+                  hintText: loc.email,
                   hintStyle: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurface.withOpacity(0.6),
                     fontFamily: AppTextStyles.albraGroteskFontFamily,
@@ -52,7 +53,6 @@ class ForgetPasswordScreen extends StatelessWidget {
                 style: TextStyle(color: theme.colorScheme.onSurface),
               ),
               const SizedBox(height: 20),
-
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -61,7 +61,7 @@ class ForgetPasswordScreen extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          'Reset link sent to your email!',
+                          loc.resetLinkSent,
                           style: TextStyle(
                             color: theme.colorScheme.onInverseSurface,
                           ),
@@ -85,7 +85,7 @@ class ForgetPasswordScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   child: Text(
-                    'Send Reset Link',
+                    loc.sendResetLink,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontFamily: AppTextStyles.albraGroteskFontFamily,
                       fontWeight: FontWeight.w500,
@@ -95,7 +95,6 @@ class ForgetPasswordScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
@@ -104,7 +103,7 @@ class ForgetPasswordScreen extends StatelessWidget {
                   foregroundColor: theme.colorScheme.primary,
                 ),
                 child: Text(
-                  'Back to Login',
+                  loc.backToLogin,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontFamily: AppTextStyles.albraGroteskFontFamily,
                     fontWeight: FontWeight.w500,

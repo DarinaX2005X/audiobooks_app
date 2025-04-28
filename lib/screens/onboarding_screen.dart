@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/theme_constants.dart';
+import '../l10n/app_localizations.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -9,7 +10,6 @@ class OnboardingScreen extends StatelessWidget {
   Future<void> _completeOnboarding(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('seen_onboarding', true);
-
     if (context.mounted) {
       Navigator.pushReplacementNamed(context, '/register');
     }
@@ -18,14 +18,13 @@ class OnboardingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
 
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness:
-            theme.brightness == Brightness.dark
-                ? Brightness.light
-                : Brightness.dark,
+        theme.brightness == Brightness.dark ? Brightness.light : Brightness.dark,
       ),
     );
 
@@ -50,7 +49,8 @@ class OnboardingScreen extends StatelessWidget {
                         color: theme.colorScheme.onBackground,
                       ),
                       children: [
-                        const TextSpan(text: 'Choose Your\n'),
+                        TextSpan(text: loc.onboardingTitle.split('\n')[0]),
+                        const TextSpan(text: '\n'),
                         const TextSpan(text: 'Favourite '),
                         TextSpan(
                           text: 'Genre ',
@@ -91,7 +91,7 @@ class OnboardingScreen extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          'Next',
+                          loc.next,
                           style: theme.textTheme.titleMedium?.copyWith(
                             color: theme.colorScheme.onPrimary,
                             fontFamily: AppTextStyles.albraGroteskFontFamily,

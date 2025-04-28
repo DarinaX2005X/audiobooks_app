@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/theme_constants.dart';
+import '../l10n/app_localizations.dart';
 import '../models/book.dart';
 import 'details_screen.dart';
 
@@ -78,11 +79,10 @@ class _SearchScreenState extends State<SearchScreen> {
       if (query.isEmpty) {
         _filteredResults = searchResults;
       } else {
-        _filteredResults =
-            searchResults.where((book) {
-              return book.title.toLowerCase().contains(query) ||
-                  book.author.toLowerCase().contains(query);
-            }).toList();
+        _filteredResults = searchResults.where((book) {
+          return book.title.toLowerCase().contains(query) ||
+              book.author.toLowerCase().contains(query);
+        }).toList();
       }
     });
   }
@@ -90,6 +90,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
@@ -126,7 +127,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                     ),
                     Text(
-                      'Search',
+                      loc.search,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
                         fontWeight: FontWeight.w500,
@@ -155,7 +156,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Explore',
+                      loc.explore,
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontFamily: AppTextStyles.albraGroteskFontFamily,
                         fontWeight: FontWeight.w600,
@@ -178,7 +179,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         controller: _searchController,
                         style: TextStyle(color: theme.colorScheme.onSurface),
                         decoration: InputDecoration(
-                          hintText: 'Search Books or Author...',
+                          hintText: loc.searchBooksOrAuthor,
                           hintStyle: TextStyle(
                             color: theme.colorScheme.onSurface.withOpacity(0.6),
                             fontSize: 14,
@@ -192,19 +193,25 @@ class _SearchScreenState extends State<SearchScreen> {
                     const SizedBox(height: 20),
                     if (!isSearching) ...[
                       Text(
-                        'Recommended genres',
+                        loc.recommendedGenres,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontFamily: AppTextStyles.albraGroteskFontFamily,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _buildGenreRow(['Fantasy', 'Drama']),
+                      _buildGenreRow([
+                        loc.genreFantasy,
+                        loc.genreDrama,
+                      ]),
                       const SizedBox(height: 15),
-                      _buildGenreRow(['Fiction', 'Detective']),
+                      _buildGenreRow([
+                        loc.genreFiction,
+                        loc.genreDetective,
+                      ]),
                       const SizedBox(height: 20),
                       Text(
-                        'Latest search',
+                        loc.latestSearch,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontFamily: AppTextStyles.albraGroteskFontFamily,
                           fontWeight: FontWeight.w500,
@@ -223,7 +230,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                     ] else ...[
                       Text(
-                        'Search results',
+                        loc.searchResults,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontFamily: AppTextStyles.albraGroteskFontFamily,
                           fontWeight: FontWeight.w500,
@@ -233,7 +240,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       if (_filteredResults.isEmpty)
                         Center(
                           child: Text(
-                            'No results found',
+                            loc.noResultsFound,
                             style: theme.textTheme.bodyLarge?.copyWith(
                               fontFamily: AppTextStyles.albraGroteskFontFamily,
                               fontWeight: FontWeight.w400,
@@ -294,10 +301,7 @@ class _SearchScreenState extends State<SearchScreen> {
       padding: const EdgeInsets.only(bottom: 15),
       child: GestureDetector(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => DetailsScreen(book: book)),
-          );
+          Navigator.pushNamed(context, '/details', arguments: book);
         },
         child: Row(
           children: [

@@ -1,0 +1,7 @@
+flutter_gen:
+  output: lib/l10n/generated/
+  integrations:
+    flutter_localizations:
+      arb_dir: lib/l10n
+      output_localizations_file: app_localizations.dart
+      class_name: AppLocalizations
