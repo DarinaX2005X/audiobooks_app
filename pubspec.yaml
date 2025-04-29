@@ -36,6 +36,12 @@ flutter:
     - family: Albra Grotesk TRIAL
       fonts:
         - asset: assets/fonts/AlbraGroteskTRIAL-Regular.otf
+    - family: Bitter Regular
+      fonts:
+        - asset: assets/fonts/Bitter-Regular.ttf
+    - family: Bitter Medium
+      fonts:
+        - asset: assets/fonts/Bitter-Medium.ttf
 
   assets:
     - images/book1.png

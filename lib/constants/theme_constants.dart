@@ -10,8 +10,8 @@ class AppColors {
 
 // Defines the text styles used throughout the app
 class AppTextStyles {
-  static const String albraFontFamily = 'Albra';
-  static const String albraGroteskFontFamily = 'Albra Grotesk TRIAL';
+  static const String albraFontFamily = 'Bitter Regular';
+  static const String albraGroteskFontFamily = 'Bitter Medium';
 
   static const TextStyle titleStyle = TextStyle(
     color: Colors.white,
