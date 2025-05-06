@@ -82,5 +82,6 @@
   "enableDataSync": "Enable automatic data sync",
   "account": "Account",
   "logoutConfirmation": "Are you sure you want to log out?",
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  "errorLoadingPdf": "Failed to load PDF text"
 }

@@ -27,7 +27,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
     try {
       if (widget.book.coverUrl!.startsWith('http')) {
-        // Network image
         return Image.network(
           widget.book.coverUrl!,
           fit: BoxFit.cover,
@@ -39,7 +38,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
           },
         );
       } else {
-        // Asset image
         return Image.asset(
           widget.book.coverUrl!,
           fit: BoxFit.cover,
@@ -100,7 +98,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        Navigator.pushNamed(context, '/text');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TextScreen(book: widget.book),
+                          ),
+                        );
                       },
                       child: Container(
                         width: 48,

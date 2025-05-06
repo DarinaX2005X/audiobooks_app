@@ -11,7 +11,6 @@ import 'screens/personalize_screen.dart';
 import 'screens/main_screen.dart';
 import 'screens/forget_password_screen.dart';
 import 'screens/details_screen.dart';
-import 'screens/text_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/settings_screen.dart';
 import 'constants/theme_constants.dart';
@@ -38,11 +37,10 @@ void main() async {
       ),
     );
   } catch (e) {
-    // Handle initialization errors (e.g., SharedPreferences failure)
     print('Initialization error: $e');
     runApp(
       ChangeNotifierProvider(
-        create: (_) => SettingsProvider(), // Fallback provider
+        create: (_) => SettingsProvider(),
         child: const MyApp(),
       ),
     );
@@ -135,7 +133,6 @@ class MyApp extends StatelessWidget {
         '/details': (context) => DetailsScreen(
           book: ModalRoute.of(context)!.settings.arguments as Book,
         ),
-        '/text': (context) => const TextScreen(),
       },
     );
   }

@@ -5,6 +5,8 @@ class Book {
   final String coverUrl;
   final String author;
   final String genre;
+  final String pdfUrl;
+
   Book({
     required this.title,
     required this.description,
@@ -12,6 +14,7 @@ class Book {
     required this.genre,
     required this.fileName,
     required this.coverUrl,
+    required this.pdfUrl,
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
@@ -40,6 +43,7 @@ class Book {
       author: authorName,
       genre: categoryName,
       coverUrl: json['coverUrl'] ?? '',
+      pdfUrl: json['pdfUrl'] ?? '',
     );
   }
 }

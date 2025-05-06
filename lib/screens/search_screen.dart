@@ -226,6 +226,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           coverUrl: 'images/book1.png',
                           description: 'descr',
                           fileName: 'filename',
+                          pdfUrl: 'pdfs/test.pdf',
                         ),
                       ),
                     ] else ...[
