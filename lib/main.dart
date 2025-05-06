@@ -24,17 +24,29 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
     DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight, // Added for landscape support
+    DeviceOrientation.landscapeRight,
   ]);
-  await AuthService.init();
-  final settingsProvider = SettingsProvider();
-  await settingsProvider.init();
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => settingsProvider,
-      child: const MyApp(),
-    ),
-  );
+
+  try {
+    await AuthService.init();
+    final settingsProvider = SettingsProvider();
+    await settingsProvider.init();
+    runApp(
+      ChangeNotifierProvider(
+        create: (_) => settingsProvider,
+        child: const MyApp(),
+      ),
+    );
+  } catch (e) {
+    // Handle initialization errors (e.g., SharedPreferences failure)
+    print('Initialization error: $e');
+    runApp(
+      ChangeNotifierProvider(
+        create: (_) => SettingsProvider(), // Fallback provider
+        child: const MyApp(),
+      ),
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {

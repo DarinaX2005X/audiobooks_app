@@ -70,5 +70,17 @@
   "genreDrama": "Drama",
   "genreFiction": "Fiction",
   "allCategory": "All",
-  "genreDetective": "Detective"
+  "genreDetective": "Detective",
+  "notifications": "Notifications",
+  "enableNotifications": "Enable push notifications",
+  "readingPreferences": "Reading Preferences",
+  "fontSize": "Font Size",
+  "fontSizeSmall": "Small",
+  "fontSizeMedium": "Medium",
+  "fontSizeLarge": "Large",
+  "dataSync": "Data Sync",
+  "enableDataSync": "Enable automatic data sync",
+  "account": "Account",
+  "logoutConfirmation": "Are you sure you want to log out?",
+  "cancel": "Cancel"
 }

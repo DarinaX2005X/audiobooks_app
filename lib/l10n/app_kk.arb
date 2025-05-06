@@ -70,5 +70,17 @@
   "genreDrama": "Драма",
   "genreFiction": "Фантастика",
   "allCategory": "Барлығы",
-  "genreDetective": "Детектив"
+  "genreDetective": "Детектив",
+  "notifications": "Хабарламалар",
+  "enableNotifications": "Push-хабарламаларды қосу",
+  "readingPreferences": "Оқу параметрлері",
+  "fontSize": "Қаріп өлшемі",
+  "fontSizeSmall": "Кіші",
+  "fontSizeMedium": "Орташа",
+  "fontSizeLarge": "Үлкен",
+  "dataSync": "Деректерді синхрондау",
+  "enableDataSync": "Деректерді автоматты синхрондауды қосу",
+  "account": "Есептік жазба",
+  "logoutConfirmation": "Шығуға сенімдісіз бе?",
+  "cancel": "Болдырмау"
 }

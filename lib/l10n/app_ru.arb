@@ -70,5 +70,17 @@
   "genreDrama": "Драма",
   "genreFiction": "Художественная литература",
   "allCategory": "Все",
-  "genreDetective": "Детектив"
+  "genreDetective": "Детектив",
+  "notifications": "Уведомления",
+  "enableNotifications": "Включить push-уведомления",
+  "readingPreferences": "Настройки чтения",
+  "fontSize": "Размер шрифта",
+  "fontSizeSmall": "Маленький",
+  "fontSizeMedium": "Средний",
+  "fontSizeLarge": "Большой",
+  "dataSync": "Синхронизация данных",
+  "enableDataSync": "Включить автоматическую синхронизацию данных",
+  "account": "Аккаунт",
+  "logoutConfirmation": "Вы уверены, что хотите выйти?",
+  "cancel": "Отмена"
 }
