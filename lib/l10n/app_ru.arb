@@ -83,5 +83,14 @@
   "account": "Аккаунт",
   "logoutConfirmation": "Вы уверены, что хотите выйти?",
   "cancel": "Отмена",
-  "errorLoadingPdf": "Не удалось загрузить текст PDF"
+  "offlineMode": "Оффлайн-режим: Используются кэшированные данные",
+  "sync": "Синхронизировать",
+  "offlineCannotSync": "Невозможно синхронизировать: Нет интернета",
+  "syncSuccessful": "Данные успешно синхронизированы",
+  "syncFailed": "Ошибка синхронизации: {error}",
+  "errorLoadingData": "Ошибка загрузки данных: {error}",
+  "errorLoadingPdf": "Не удалось загрузить PDF: {error}",
+  "offlineCannotPlay": "Невозможно воспроизвести аудио в оффлайн-режиме",
+  "continueAsGuest": "Продолжить как гость",
+  "guestAccessRestricted": "Пожалуйста, войдите, чтобы получить доступ к этой функции"
 }

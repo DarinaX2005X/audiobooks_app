@@ -6,14 +6,104 @@ import '../services/auth_service.dart';
 import '../services/settings_service.dart';
 import 'login_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool? isGuest;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkGuestMode();
+  }
+
+  Future<void> _checkGuestMode() async {
+    final guest = await AuthService.isGuestMode();
+    if (mounted) {
+      setState(() {
+        isGuest = guest;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    final settings = Provider.of<SettingsProvider>(context);
     final theme = Theme.of(context);
+
+    if (isGuest == null) {
+      return Scaffold(
+        backgroundColor: theme.colorScheme.background,
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (isGuest!) {
+      return Scaffold(
+        backgroundColor: theme.colorScheme.background,
+        appBar: AppBar(
+          title: Text(
+            loc.settings,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontFamily: AppTextStyles.albraFontFamily,
+            ),
+          ),
+          backgroundColor: theme.colorScheme.background,
+        ),
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    loc.guestAccessRestricted,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontFamily: AppTextStyles.albraGroteskFontFamily,
+                      color: theme.colorScheme.error,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.colorScheme.primary,
+                      foregroundColor: theme.colorScheme.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    ),
+                    child: Text(
+                      loc.login,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontFamily: AppTextStyles.albraGroteskFontFamily,
+                        fontWeight: FontWeight.w500,
+                        color: theme.colorScheme.onPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final settings = Provider.of<SettingsProvider>(context);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,

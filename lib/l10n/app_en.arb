@@ -83,5 +83,14 @@
   "account": "Account",
   "logoutConfirmation": "Are you sure you want to log out?",
   "cancel": "Cancel",
-  "errorLoadingPdf": "Failed to load PDF text"
+  "offlineMode": "Offline Mode: Using cached data",
+  "sync": "Sync",
+  "offlineCannotSync": "Cannot sync: No internet connection",
+  "syncSuccessful": "Data synced successfully",
+  "syncFailed": "Sync failed: {error}",
+  "errorLoadingData": "Error loading data: {error}",
+  "errorLoadingPdf": "Failed to load PDF: {error}",
+  "offlineCannotPlay": "Cannot play audio offline",
+  "continueAsGuest": "Continue as Guest",
+  "guestAccessRestricted": "Please log in to access this feature"
 }

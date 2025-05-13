@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../constants/theme_constants.dart';
 import '../services/auth_service.dart';
 import '../l10n/app_localizations.dart';
@@ -19,6 +20,20 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isRemembered = false;
   bool _isLoading = false;
   String? _errorMessage;
+  bool isOffline = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkConnectivity();
+  }
+
+  Future<void> _checkConnectivity() async {
+    final connectivity = await Connectivity().checkConnectivity();
+    setState(() {
+      isOffline = connectivity == ConnectivityResult.none;
+    });
+  }
 
   @override
   void dispose() {
@@ -80,6 +95,15 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _handleGuestLogin() async {
+    if (!mounted) return;
+    await AuthService.setGuestMode(true); // Set guest mode
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const MainScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -87,199 +111,265 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04), // 4% of screen width
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(height: MediaQuery.of(context).size.height * 0.06), // 6% of screen height
-                Text(
-                  loc.login,
-                  style: theme.textTheme.displaySmall?.copyWith(
-                    fontFamily: AppTextStyles.albraFontFamily,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-                if (_errorMessage != null)
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    margin: const EdgeInsets.only(bottom: 20),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.error.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      _errorMessage!,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontFamily: AppTextStyles.albraGroteskFontFamily,
-                        color: theme.colorScheme.error,
-                      ),
-                    ),
-                  ),
-                TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: theme.colorScheme.surface,
-                    hintText: loc.email,
-                    hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
-                      fontFamily: AppTextStyles.albraGroteskFontFamily,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: theme.colorScheme.outline),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: theme.colorScheme.outline),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: theme.colorScheme.primary),
-                    ),
-                  ),
-                  style: TextStyle(color: theme.colorScheme.onSurface),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: theme.colorScheme.surface,
-                    hintText: loc.password,
-                    hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
-                      fontFamily: AppTextStyles.albraGroteskFontFamily,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: theme.colorScheme.outline),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: theme.colorScheme.outline),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: theme.colorScheme.primary),
-                    ),
-                  ),
-                  style: TextStyle(color: theme.colorScheme.onSurface),
-                  onSubmitted: (_) => _handleLogin(),
-                ),
-                const SizedBox(height: 10),
-                Row(
+      body: Stack(
+        children: [
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04), // 4% of screen width
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Checkbox(
-                      value: _isRemembered,
-                      onChanged: (value) {
-                        setState(() {
-                          _isRemembered = value ?? false;
-                        });
-                      },
-                      activeColor: theme.colorScheme.primary,
-                    ),
-                    Flexible(
-                      child: Text(
-                        loc.rememberMe,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontFamily: AppTextStyles.albraGroteskFontFamily,
-                          fontWeight: FontWeight.w400,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.06), // 6% of screen height
+                    Text(
+                      loc.login,
+                      style: theme.textTheme.displaySmall?.copyWith(
+                        fontFamily: AppTextStyles.albraFontFamily,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                    if (_errorMessage != null)
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.error.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          _errorMessage!,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontFamily: AppTextStyles.albraGroteskFontFamily,
+                            color: theme.colorScheme.error,
+                          ),
+                        ),
+                      ),
+                    TextField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      enabled: !isOffline,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: theme.colorScheme.surface,
+                        hintText: loc.email,
+                        hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          fontFamily: AppTextStyles.albraGroteskFontFamily,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: theme.colorScheme.outline),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: theme.colorScheme.outline),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: theme.colorScheme.primary),
+                        ),
+                        disabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.5)),
+                        ),
+                      ),
+                      style: TextStyle(color: theme.colorScheme.onSurface),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      enabled: !isOffline,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: theme.colorScheme.surface,
+                        hintText: loc.password,
+                        hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          fontFamily: AppTextStyles.albraGroteskFontFamily,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: theme.colorScheme.outline),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: theme.colorScheme.outline),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: theme.colorScheme.primary),
+                        ),
+                        disabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.5)),
+                        ),
+                      ),
+                      style: TextStyle(color: theme.colorScheme.onSurface),
+                      onSubmitted: (_) => _handleLogin(),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _isRemembered,
+                          onChanged: isOffline
+                              ? null
+                              : (value) {
+                            setState(() {
+                              _isRemembered = value ?? false;
+                            });
+                          },
+                          activeColor: theme.colorScheme.primary,
+                          checkColor: theme.colorScheme.onPrimary,
+                        ),
+                        Flexible(
+                          child: Text(
+                            loc.rememberMe,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontFamily: AppTextStyles.albraGroteskFontFamily,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.9, // 90% of screen width
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: isOffline || _isLoading ? null : _handleLogin,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: theme.colorScheme.onPrimary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          disabledBackgroundColor: theme.colorScheme.primary.withOpacity(0.5),
+                          disabledForegroundColor: theme.colorScheme.onPrimary.withOpacity(0.7),
+                        ),
+                        child: _isLoading
+                            ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: theme.colorScheme.onPrimary,
+                            strokeWidth: 2,
+                          ),
+                        )
+                            : Text(
+                          loc.login,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontFamily: AppTextStyles.albraGroteskFontFamily,
+                            fontWeight: FontWeight.w500,
+                            color: theme.colorScheme.onPrimary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    if (isOffline)
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.9,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _handleGuestLogin,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.secondary,
+                            foregroundColor: theme.colorScheme.onSecondary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: Text(
+                            loc.continueAsGuest,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontFamily: AppTextStyles.albraGroteskFontFamily,
+                              fontWeight: FontWeight.w500,
+                              color: theme.colorScheme.onSecondary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 10),
+                    TextButton(
+                      onPressed: isOffline
+                          ? null
+                          : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const RegisterScreen(),
+                          ),
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: theme.colorScheme.primary,
+                        disabledForegroundColor: theme.colorScheme.primary.withOpacity(0.5),
+                      ),
+                      child: Text(
+                        loc.dontHaveAccount,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontFamily: AppTextStyles.albraGroteskFontFamily,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: isOffline
+                          ? null
+                          : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ForgetPasswordScreen(),
+                          ),
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: theme.colorScheme.primary,
+                        disabledForegroundColor: theme.colorScheme.primary.withOpacity(0.5),
+                      ),
+                      child: Text(
+                        loc.forgetPassword,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontFamily: AppTextStyles.albraGroteskFontFamily,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.02),
                   ],
                 ),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.9, // 90% of screen width
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleLogin,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.colorScheme.primary,
-                      foregroundColor: theme.colorScheme.onPrimary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      disabledBackgroundColor: theme.colorScheme.primary.withOpacity(0.5),
-                      disabledForegroundColor: theme.colorScheme.onPrimary.withOpacity(0.7),
-                    ),
-                    child: _isLoading
-                        ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: theme.colorScheme.onPrimary,
-                        strokeWidth: 2,
-                      ),
-                    )
-                        : Text(
-                      loc.login,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontFamily: AppTextStyles.albraGroteskFontFamily,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onPrimary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const RegisterScreen(),
-                      ),
-                    );
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: theme.colorScheme.primary,
-                  ),
-                  child: Text(
-                    loc.dontHaveAccount,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontFamily: AppTextStyles.albraGroteskFontFamily,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ForgetPasswordScreen(),
-                      ),
-                    );
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: theme.colorScheme.primary,
-                  ),
-                  child: Text(
-                    loc.forgetPassword,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontFamily: AppTextStyles.albraGroteskFontFamily,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-              ],
+              ),
             ),
           ),
-        ),
+          if (isOffline)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                color: theme.colorScheme.error.withOpacity(0.9),
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  loc.offlineMode,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.white,
+                    fontFamily: AppTextStyles.albraGroteskFontFamily,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

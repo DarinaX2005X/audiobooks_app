@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import '../constants/theme_constants.dart';
 import '../l10n/app_localizations.dart';
 import '../models/book.dart';
+import '../services/auth_service.dart';
+import '../services/local_storage_service.dart';
 import 'details_screen.dart';
+import 'login_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -14,24 +17,33 @@ class LibraryScreen extends StatefulWidget {
 }
 
 class _LibraryScreenState extends State<LibraryScreen> {
-  // List of saved books
-  final List<Book> savedBooks = [
-    // Book(title: 'The Black Witch', author: 'Laurie Forest', genre: 'Fantasy', coverUrl: 'images/book1.png'),
-    // Book(title: 'A Promised Land', author: 'Barrack Obama', genre: 'Non-Fiction', coverUrl: 'images/book2.png'),
-    // Book(title: 'Harry Potter and the Prisoner of Azkaban', author: 'J.K. Rowling', genre: 'Fantasy', coverUrl: 'images/book3.png'),
-    // Book(title: 'The Kidnapper’s Accomplice', author: 'C. J. Archer', genre: 'Mystery', coverUrl: 'images/book4.png'),
-    // Book(title: 'Light Mage', author: 'Author Name', genre: 'Fantasy', coverUrl: 'images/book5.png'),
-  ];
-
-  // Controller for the search bar
+  List<Book> savedBooks = [];
   final TextEditingController _searchController = TextEditingController();
   List<Book> _filteredBooks = [];
+  bool isLoading = true;
+  bool? isGuest;
 
   @override
   void initState() {
     super.initState();
-    _filteredBooks = savedBooks;
+    _initialize();
     _searchController.addListener(_filterBooks);
+  }
+
+  Future<void> _initialize() async {
+    setState(() {
+      isLoading = true;
+    });
+    final guest = await AuthService.isGuestMode();
+    final books = await LocalStorageService.getBooks();
+    if (mounted) {
+      setState(() {
+        isGuest = guest;
+        savedBooks = books.where((book) => book.isFavorite ?? false).toList();
+        _filteredBooks = savedBooks;
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -40,7 +52,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
     super.dispose();
   }
 
-  // Filters books based on the search query
   void _filterBooks() {
     final query = _searchController.text.toLowerCase();
     setState(() {
@@ -65,7 +76,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
     try {
       if (book.coverUrl!.startsWith('http')) {
-        // Network image
         return Image.network(
           book.coverUrl!,
           fit: BoxFit.cover,
@@ -77,7 +87,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
           },
         );
       } else {
-        // Asset image
         return Image.asset(
           book.coverUrl!,
           fit: BoxFit.cover,
@@ -102,6 +111,78 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final loc = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
+    if (isGuest == null || isLoading) {
+      return Scaffold(
+        backgroundColor: theme.colorScheme.background,
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (isGuest!) {
+      return Scaffold(
+        backgroundColor: theme.colorScheme.background,
+        appBar: AppBar(
+          title: Text(
+            loc.favorites,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontFamily: AppTextStyles.albraGroteskFontFamily,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          backgroundColor: theme.colorScheme.background,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
+            onPressed: widget.onBack ?? () => Navigator.pop(context),
+          ),
+        ),
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    loc.guestAccessRestricted,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontFamily: AppTextStyles.albraGroteskFontFamily,
+                      color: theme.colorScheme.error,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.colorScheme.primary,
+                      foregroundColor: theme.colorScheme.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    ),
+                    child: Text(
+                      loc.login,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontFamily: AppTextStyles.albraGroteskFontFamily,
+                        fontWeight: FontWeight.w500,
+                        color: theme.colorScheme.onPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
       body: SafeArea(
@@ -109,7 +190,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with back button, title, and filter icon
               Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: MediaQuery.of(context).size.width * 0.04,
@@ -153,7 +233,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   ],
                 ),
               ),
-              // Title and search bar
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.04),
                 child: Column(
@@ -168,7 +247,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.015),
                     Container(
-                      width: MediaQuery.of(context).size.width * 0.9, // Responsive width
+                      width: MediaQuery.of(context).size.width * 0.9,
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                       decoration: ShapeDecoration(
                         color: theme.colorScheme.surface.withOpacity(0.5),
@@ -193,7 +272,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   ],
                 ),
               ),
-              // List of filtered books
               _filteredBooks.isEmpty
                   ? SizedBox(
                 height: MediaQuery.of(context).size.height * 0.4,
@@ -208,9 +286,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ),
               )
                   : SizedBox(
-                height: MediaQuery.of(context).size.height * 0.5, // Constrain height
+                height: MediaQuery.of(context).size.height * 0.5,
                 child: ListView.builder(
-                  physics: const ClampingScrollPhysics(), // Prevent overscroll
+                  physics: const ClampingScrollPhysics(),
                   padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.04),
                   itemCount: _filteredBooks.length,
                   itemBuilder: (context, index) {
@@ -219,10 +297,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       padding: const EdgeInsets.only(bottom: 4),
                       child: GestureDetector(
                         onTap: () {
-                          Navigator.pushNamed(
+                          Navigator.push(
                             context,
-                            '/details',
-                            arguments: book,
+                            MaterialPageRoute(
+                              builder: (context) => DetailsScreen(book: book),
+                            ),
                           );
                         },
                         child: Container(
@@ -236,7 +315,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           child: Row(
                             children: [
                               Container(
-                                width: MediaQuery.of(context).size.width * 0.2, // Responsive width
+                                width: MediaQuery.of(context).size.width * 0.2,
                                 height: MediaQuery.of(context).size.width * 0.2,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(8),
@@ -279,7 +358,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   },
                 ),
               ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.1), // Extra space for navbar
+              SizedBox(height: MediaQuery.of(context).size.height * 0.1),
             ],
           ),
         ),

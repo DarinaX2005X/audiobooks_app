@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../services/api_servive.dart';
 import '../constants/theme_constants.dart';
 import '../models/book.dart';
+import '../services/auth_service.dart';
 import 'search_screen.dart';
 import 'library_screen.dart';
 import 'profile_screen.dart';
 import 'details_screen.dart';
+import 'login_screen.dart';
 import '../l10n/app_localizations.dart';
+import '../services/local_storage_service.dart';
+import 'dart:async';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -21,22 +26,33 @@ class _MainScreenState extends State<MainScreen> {
   final List<String> categories = [];
   String selectedCategory = '';
   bool isLoading = true;
+  bool isOffline = false;
+  StreamSubscription<ConnectivityResult>? _connectivitySubscription;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _setupConnectivityListener();
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (categories.isEmpty) {
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _setupConnectivityListener() async {
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((result) async {
+      final wasOffline = isOffline;
       setState(() {
-        categories.add('All'); // Hardcoded "All" instead of localized
-        selectedCategory = 'All';
+        isOffline = result == ConnectivityResult.none;
       });
-    }
+      if (wasOffline && !isOffline) {
+        await _syncData();
+        await _loadData();
+      }
+    });
   }
 
   Future<void> _loadData() async {
@@ -45,29 +61,83 @@ class _MainScreenState extends State<MainScreen> {
     });
 
     try {
-      final fetchedCategories = await ApiService.fetchCategories();
-      final fetchedBooks = await ApiService.fetchBooks();
+      final connectivity = await Connectivity().checkConnectivity();
+      final offline = connectivity == ConnectivityResult.none;
 
       setState(() {
-        categories
-          ..clear()
-          ..add('All') // Hardcoded "All"
-          ..addAll(fetchedCategories.map((category) => category.name));
-        books
-          ..clear()
-          ..addAll(fetchedBooks);
-        selectedCategory = 'All';
-        isLoading = false;
+        isOffline = offline;
       });
-    } catch (e) {
-      if (mounted) {
+
+      if (offline) {
+        final cachedBooks = await LocalStorageService.getBooks();
+        final cachedCategories = await LocalStorageService.getCategories();
         setState(() {
+          books
+            ..clear()
+            ..addAll(cachedBooks);
+          categories
+            ..clear()
+            ..addAll(cachedCategories.isEmpty ? ['All'] : cachedCategories);
+          selectedCategory = categories.contains(selectedCategory) ? selectedCategory : 'All';
           isLoading = false;
         });
+      } else {
+        final fetchedCategories = await ApiService.fetchCategories();
+        final fetchedBooks = await ApiService.fetchBooks();
+
+        // Cache PDFs for each book
+        for (var book in fetchedBooks) {
+          if (book.pdfUrl.isNotEmpty) {
+            await LocalStorageService.cachePdf(book.pdfUrl, book.title);
+          }
+        }
+
+        setState(() {
+          categories
+            ..clear()
+            ..add('All')
+            ..addAll(fetchedCategories.map((c) => c.name));
+          books
+            ..clear()
+            ..addAll(fetchedBooks);
+          selectedCategory = 'All';
+          isLoading = false;
+        });
+
+        await LocalStorageService.saveBooks(fetchedBooks);
+        await LocalStorageService.saveCategories(categories);
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).errorLoadingData(e.toString()))),
+      );
+    }
+  }
+
+  Future<void> _syncData() async {
+    if (isOffline) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).offlineCannotSync)),
+      );
+      return;
+    }
+
+    try {
+      final unsyncedBooks = await LocalStorageService.getUnsyncedBooks();
+      if (unsyncedBooks.isNotEmpty) {
+        await ApiService.syncBooks(unsyncedBooks);
+        await LocalStorageService.markBooksAsSynced(unsyncedBooks);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${AppLocalizations.of(context).errorOccurred}: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context).syncSuccessful)),
         );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).syncFailed(e.toString()))),
+      );
     }
   }
 
@@ -90,8 +160,7 @@ class _MainScreenState extends State<MainScreen> {
             return Center(
               child: CircularProgressIndicator(
                 value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                    loadingProgress.expectedTotalBytes!
+                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
                     : null,
               ),
             );
@@ -137,7 +206,7 @@ class _MainScreenState extends State<MainScreen> {
 
     Map<String, List<Book>> booksByGenre = {};
     for (var book in books) {
-      if (selectedCategory == 'All' || book.genre == selectedCategory) { // Hardcoded "All"
+      if (selectedCategory == 'All' || book.genre == selectedCategory) {
         final genre = book.genre.isNotEmpty ? book.genre : 'Uncategorized';
         booksByGenre.putIfAbsent(genre, () => []).add(book);
       }
@@ -271,131 +340,170 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildMainContent() {
     final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
     return RefreshIndicator(
       onRefresh: _loadData,
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.only(top: 20),
-              decoration: BoxDecoration(color: theme.colorScheme.background),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(top: 20),
+                  decoration: BoxDecoration(color: theme.colorScheme.background),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 48,
-                                height: 48,
-                                decoration: const ShapeDecoration(
-                                  image: DecorationImage(
-                                    image: AssetImage("images/user.png"),
-                                    fit: BoxFit.fill,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: const ShapeDecoration(
+                                      image: DecorationImage(
+                                        image: AssetImage("images/user.png"),
+                                        fit: BoxFit.fill,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(100),
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(100),
+                                  const SizedBox(width: 12),
+                                  Flexible(
+                                    child: Text(
+                                      loc.heyUser('John'),
+                                      style: theme.textTheme.headlineSmall?.copyWith(
+                                        fontFamily: AppTextStyles.albraFontFamily,
+                                        fontWeight: FontWeight.w500,
+                                        height: 1.60,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                ElevatedButton(
+                                  onPressed: _syncData,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: theme.colorScheme.primary,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                  ),
+                                  child: Text(loc.sync),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: ShapeDecoration(
+                                    color: theme.colorScheme.surface,
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(100),
+                                      ),
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    Icons.notifications,
+                                    color: theme.colorScheme.onSurface,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: categories.map((category) {
+                              bool isSelected = selectedCategory == category;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      selectedCategory = category;
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 14,
+                                    ),
+                                    decoration: ShapeDecoration(
+                                      color: isSelected
+                                          ? theme.colorScheme.surface
+                                          : theme.colorScheme.surface.withOpacity(0.5),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(100),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      category,
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: isSelected
+                                            ? theme.colorScheme.onSurface
+                                            : theme.colorScheme.onSurface.withOpacity(0.7),
+                                        fontFamily: AppTextStyles.albraGroteskFontFamily,
+                                        fontWeight: FontWeight.w400,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Flexible(
-                                child: Text(
-                                  AppLocalizations.of(context).heyUser('John'),
-                                  style: theme.textTheme.headlineSmall?.copyWith(
-                                    fontFamily: AppTextStyles.albraFontFamily,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.60,
-                                  ),
-                                ),
-                              ),
-                            ],
+                              );
+                            }).toList(),
                           ),
                         ),
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: ShapeDecoration(
-                            color: theme.colorScheme.surface,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(100),
-                              ),
+                        const SizedBox(height: 24),
+                        if (isLoading)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child: CircularProgressIndicator(),
                             ),
-                          ),
-                          child: Icon(
-                            Icons.notifications,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
+                          )
+                        else
+                          ..._buildBookSections(),
                       ],
                     ),
-                    const SizedBox(height: 24),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: categories.map((category) {
-                          bool isSelected = selectedCategory == category;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  selectedCategory = category;
-                                });
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 14,
-                                ),
-                                decoration: ShapeDecoration(
-                                  color: isSelected
-                                      ? theme.colorScheme.surface
-                                      : theme.colorScheme.surface.withOpacity(0.5),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                ),
-                                child: Text(
-                                  category,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: isSelected
-                                        ? theme.colorScheme.onSurface
-                                        : theme.colorScheme.onSurface.withOpacity(0.7),
-                                    fontFamily: AppTextStyles.albraGroteskFontFamily,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    if (isLoading)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(20.0),
-                          child: CircularProgressIndicator(),
-                        ),
-                      )
-                    else
-                      ..._buildBookSections(),
-                  ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (isOffline)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                color: theme.colorScheme.error.withOpacity(0.9),
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  loc.offlineMode,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.white,
+                    fontFamily: AppTextStyles.albraGroteskFontFamily,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -403,62 +511,120 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    Widget currentScreen;
-    switch (_selectedIndex) {
-      case 0:
-        currentScreen = _buildMainContent();
-        break;
-      case 1:
-        currentScreen = SearchScreen(
-          onBack: () => setState(() => _selectedIndex = 0),
-        );
-        break;
-      case 2:
-        currentScreen = LibraryScreen(
-          onBack: () => setState(() => _selectedIndex = 0),
-        );
-        break;
-      case 3:
-        currentScreen = ProfileScreen(
-          onBack: () => setState(() => _selectedIndex = 0),
-        );
-        break;
-      default:
-        currentScreen = _buildMainContent();
-    }
+    final loc = AppLocalizations.of(context);
 
-    return Scaffold(
-      backgroundColor: theme.colorScheme.background,
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: currentScreen,
-      ),
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(13),
-        decoration: ShapeDecoration(
-          color: theme.colorScheme.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(100),
+    return FutureBuilder<bool>(
+      future: AuthService.isGuestMode(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Scaffold(
+            backgroundColor: theme.colorScheme.background,
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final isGuest = snapshot.data!;
+        Widget currentScreen;
+
+        switch (_selectedIndex) {
+          case 0:
+            currentScreen = _buildMainContent();
+            break;
+          case 1:
+            currentScreen = SearchScreen(
+              onBack: () => setState(() => _selectedIndex = 0),
+            );
+            break;
+          case 2:
+            if (isGuest) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(loc.guestAccessRestricted),
+                    action: SnackBarAction(
+                      label: loc.login,
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              });
+              currentScreen = _buildMainContent();
+              _selectedIndex = 0;
+            } else {
+              currentScreen = LibraryScreen(
+                onBack: () => setState(() => _selectedIndex = 0),
+              );
+            }
+            break;
+          case 3:
+            if (isGuest) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(loc.guestAccessRestricted),
+                    action: SnackBarAction(
+                      label: loc.login,
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              });
+              currentScreen = _buildMainContent();
+              _selectedIndex = 0;
+            } else {
+              currentScreen = ProfileScreen(
+                onBack: () => setState(() => _selectedIndex = 0),
+              );
+            }
+            break;
+          default:
+            currentScreen = _buildMainContent();
+        }
+
+        return Scaffold(
+          backgroundColor: theme.colorScheme.background,
+          body: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: currentScreen,
           ),
-          shadows: [
-            BoxShadow(
-              color: theme.shadowColor.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+          bottomNavigationBar: Container(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(13),
+            decoration: ShapeDecoration(
+              color: theme.colorScheme.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(100),
+              ),
+              shadows: [
+                BoxShadow(
+                  color: theme.shadowColor.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(Icons.home, 0),
-            _buildNavItem(Icons.search, 1),
-            _buildNavItem(Icons.favorite, 2),
-            _buildNavItem(Icons.person, 3),
-          ],
-        ),
-      ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(Icons.home, 0),
+                _buildNavItem(Icons.search, 1),
+                _buildNavItem(Icons.favorite, 2),
+                _buildNavItem(Icons.person, 3),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -479,9 +645,7 @@ class _MainScreenState extends State<MainScreen> {
         ),
         child: Icon(
           icon,
-          color: isSelected
-              ? theme.colorScheme.primary
-              : theme.colorScheme.onSurface,
+          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface,
           size: 24,
         ),
       ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/register_screen.dart';
@@ -16,9 +17,15 @@ import 'screens/settings_screen.dart';
 import 'constants/theme_constants.dart';
 import 'models/book.dart';
 import 'services/settings_service.dart';
+import 'services/local_storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  Hive.registerAdapter(BookAdapter());
+  await Hive.openBox<Book>(LocalStorageService.bookBoxName);
+  await Hive.openBox<String>(LocalStorageService.categoryBoxName);
+  await Hive.openBox<String>(LocalStorageService.pdfBoxName);
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,

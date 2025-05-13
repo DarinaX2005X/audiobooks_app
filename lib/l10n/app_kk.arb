@@ -83,5 +83,14 @@
   "account": "Есептік жазба",
   "logoutConfirmation": "Шығуға сенімдісіз бе?",
   "cancel": "Болдырмау",
-  "errorLoadingPdf": "PDF мәтінін жүктеу сәтсіз аяқталды"
+  "offlineMode": "Офлайн режимі: Кэштелген деректер қолданылуда",
+  "sync": "Синхрондау",
+  "offlineCannotSync": "Синхрондау мүмкін емес: Интернет жоқ",
+  "syncSuccessful": "Деректер сәтті синхрондалды",
+  "syncFailed": "Синхрондау сәтсіз: {error}",
+  "errorLoadingData": "Деректерді жүктеу қатесі: {error}",
+  "errorLoadingPdf": "PDF жүктеу сәтсіз: {error}",
+  "offlineCannotPlay": "Офлайн режимде аудио ойнату мүмкін емес",
+  "continueAsGuest": "Қонақ ретінде жалғастыру",
+  "guestAccessRestricted": "Бұл мүмкіндікті пайдалану үшін жүйеге кіріңіз"
 }

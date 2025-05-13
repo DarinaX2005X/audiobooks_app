@@ -70,4 +70,34 @@ class ApiService {
       throw Exception('Failed to load categories');
     }
   }
+
+  static Future<void> syncBooks(List<Book> books) async {
+    try {
+      print('🔄 Syncing ${books.length} books to /books/sync');
+      final unsyncedBooks = books.where((book) => !book.isSynced).toList();
+      if (unsyncedBooks.isEmpty) {
+        print('✅ No unsynced books to sync');
+        return;
+      }
+
+      final response = await _dio.post(
+        '/books/sync',
+        data: unsyncedBooks.map((book) => book.toJson()).toList(),
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ Successfully synced ${unsyncedBooks.length} books');
+      } else {
+        print('❌ Sync error response: ${response.statusCode}');
+        throw Exception('Failed to sync books');
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await AuthService.logout();
+        throw Exception('Session expired. Please login again.');
+      }
+      print('⚠️ Sync Dio error: $e');
+      throw Exception('Failed to sync books');
+    }
+  }
 }
