@@ -284,11 +284,21 @@ class ApiService {
       // First get current server state
       final userProfile = await getUserProfile();
       final serverFavorites = List<String>.from(userProfile['favorites'] ?? []);
-      final serverProgress = Map<String, int>.from(userProfile['progress'] ?? {});
+      final serverProgress = Map<String, dynamic>.from(userProfile['progress'] ?? {});
+      
+      // Convert server progress to Map<String, int>
+      final Map<String, int> convertedProgress = {};
+      serverProgress.forEach((key, value) {
+        if (value is num) {
+          convertedProgress[key] = value.toInt();
+        } else if (value is String) {
+          convertedProgress[key] = int.tryParse(value) ?? 0;
+        }
+      });
 
       // Merge local and server data
       final mergedFavorites = Set<String>.from(serverFavorites);
-      final mergedProgress = Map<String, int>.from(serverProgress);
+      final mergedProgress = Map<String, int>.from(convertedProgress);
 
       for (var book in books) {
         if (book.isFavorite == true) {

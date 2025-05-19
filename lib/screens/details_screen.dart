@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../constants/theme_constants.dart';
 import '../l10n/app_localizations.dart';
@@ -45,13 +46,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
       final userProfile = await ApiService.getUserProfile();
       if (userProfile != null) {
         final favorites = userProfile['favorites'] as List;
-        final progress = userProfile['progress'] as Map<String, dynamic>;
-        
         setState(() {
           _isFavorite = favorites.any((fav) => fav['audiobookId'] == widget.book.id);
-          if (progress.containsKey(widget.book.id)) {
-            _progressValue = progress[widget.book.id] / 100;
-          }
         });
       }
     } catch (e) {
@@ -247,7 +243,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                   ),
                                 ),
                                 child: Icon(
-                                  Icons.book,
+                                  CupertinoIcons.book_fill,
                                   color: theme.colorScheme.onSurface,
                                 ),
                               ),
