@@ -64,9 +64,7 @@ void main() async {
     runApp(
       MaterialApp(
         home: Scaffold(
-          body: Center(
-            child: Text('Failed to initialize app: $e'),
-          ),
+          body: Center(child: Text('Failed to initialize app: $e')),
         ),
       ),
     );
