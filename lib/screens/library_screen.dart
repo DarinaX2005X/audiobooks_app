@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../models/book.dart';
 import '../services/auth_service.dart';
 import '../services/local_storage_service.dart';
+import '../services/api_servive.dart';
 import 'details_screen.dart';
 import 'login_screen.dart';
 
@@ -17,11 +18,13 @@ class LibraryScreen extends StatefulWidget {
 }
 
 class _LibraryScreenState extends State<LibraryScreen> {
-  List<Book> savedBooks = [];
+  List<Book> _books = [];
   final TextEditingController _searchController = TextEditingController();
   List<Book> _filteredBooks = [];
-  bool isLoading = true;
-  bool? isGuest;
+  bool _isLoading = true;
+  bool _isGuest = false;
+  String? _error;
+  List<String> _favoriteIds = [];
 
   @override
   void initState() {
@@ -31,18 +34,140 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 
   Future<void> _initialize() async {
-    setState(() {
-      isLoading = true;
-    });
-    final guest = await AuthService.isGuestMode();
-    final books = await LocalStorageService.getBooks();
-    if (mounted) {
+    try {
+      print('📚 LibraryScreen: Initializing...');
       setState(() {
-        isGuest = guest;
-        savedBooks = books.where((book) => book.isFavorite ?? false).toList();
-        _filteredBooks = savedBooks;
-        isLoading = false;
+        _isLoading = true;
+        _error = null;
       });
+
+      final isGuest = await AuthService.isGuestMode();
+      print('📚 LibraryScreen: Is guest mode: $isGuest');
+      
+      List<Book> books = [];
+      if (!isGuest) {
+        try {
+          print('📚 LibraryScreen: Fetching user profile...');
+          final profile = await ApiService.getUserProfile();
+          print('📚 LibraryScreen: Got user profile: $profile');
+          
+          if (mounted) {
+            final favorites = (profile['favorites'] as List?) ?? [];
+            print('📚 LibraryScreen: Favorites from server: $favorites');
+            
+            final favoriteIds = favorites.map((fav) {
+              if (fav is Map) {
+                final audiobookId = fav['audiobookId'] as String;
+                print('📚 LibraryScreen: Found favorite ID: $audiobookId');
+                return audiobookId;
+              }
+              return '';
+            }).where((id) => id.isNotEmpty).toList();
+            print('📚 LibraryScreen: Favorite IDs: $favoriteIds');
+            
+            setState(() {
+              _favoriteIds = favoriteIds;
+            });
+          }
+        } catch (e) {
+          print('⚠️ LibraryScreen: Error fetching user profile: $e');
+          if (mounted) {
+            setState(() {
+              _error = e.toString();
+            });
+          }
+        }
+      }
+
+      print('📚 LibraryScreen: Fetching books...');
+      books = await ApiService.getBooks();
+      print('📚 LibraryScreen: Got ${books.length} books');
+      
+      if (mounted) {
+        final filteredBooks = books.where((book) => _favoriteIds.contains(book.id)).toList();
+        print('📚 LibraryScreen: Filtered books count: ${filteredBooks.length}');
+        setState(() {
+          _books = filteredBooks;
+          _filteredBooks = filteredBooks;
+          _isGuest = isGuest;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('⚠️ LibraryScreen: Error initializing: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _error = e.toString();
+        });
+      }
+    }
+  }
+
+  Future<void> _refreshBooks() async {
+    try {
+      print('📚 LibraryScreen: Refreshing books...');
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+
+      List<Book> books = [];
+      if (!_isGuest) {
+        try {
+          print('📚 LibraryScreen: Fetching user profile...');
+          final profile = await ApiService.getUserProfile();
+          print('📚 LibraryScreen: Got user profile: $profile');
+          
+          if (mounted) {
+            final favorites = (profile['favorites'] as List?) ?? [];
+            print('📚 LibraryScreen: Favorites from server: $favorites');
+            
+            final favoriteIds = favorites.map((fav) {
+              if (fav is Map) {
+                final audiobookId = fav['audiobookId'] as String;
+                print('📚 LibraryScreen: Found favorite ID: $audiobookId');
+                return audiobookId;
+              }
+              return '';
+            }).where((id) => id.isNotEmpty).toList();
+            print('📚 LibraryScreen: Favorite IDs: $favoriteIds');
+            
+            setState(() {
+              _favoriteIds = favoriteIds;
+            });
+          }
+        } catch (e) {
+          print('⚠️ LibraryScreen: Error fetching user profile: $e');
+          if (mounted) {
+            setState(() {
+              _error = e.toString();
+            });
+          }
+        }
+      }
+
+      print('📚 LibraryScreen: Fetching books...');
+      books = await ApiService.getBooks();
+      print('📚 LibraryScreen: Got ${books.length} books');
+      
+      if (mounted) {
+        final filteredBooks = books.where((book) => _favoriteIds.contains(book.id)).toList();
+        print('📚 LibraryScreen: Filtered books count: ${filteredBooks.length}');
+        setState(() {
+          _books = filteredBooks;
+          _filteredBooks = filteredBooks;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('⚠️ LibraryScreen: Error refreshing books: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _error = e.toString();
+        });
+      }
     }
   }
 
@@ -56,9 +181,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       if (query.isEmpty) {
-        _filteredBooks = savedBooks;
+        _filteredBooks = _books;
       } else {
-        _filteredBooks = savedBooks.where((book) {
+        _filteredBooks = _books.where((book) {
           return book.title.toLowerCase().contains(query) ||
               book.author.toLowerCase().contains(query);
         }).toList();
@@ -111,258 +236,233 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final loc = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    if (isGuest == null || isLoading) {
-      return Scaffold(
-        backgroundColor: theme.colorScheme.background,
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
+    return FutureBuilder<bool>(
+      future: AuthService.isGuestMode(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Scaffold(
+            backgroundColor: theme.colorScheme.background,
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
 
-    if (isGuest!) {
-      return Scaffold(
-        backgroundColor: theme.colorScheme.background,
-        appBar: AppBar(
-          title: Text(
-            loc.favorites,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontFamily: AppTextStyles.albraGroteskFontFamily,
-              fontWeight: FontWeight.w500,
+        final isGuest = snapshot.data!;
+
+        if (isGuest) {
+          return Scaffold(
+            backgroundColor: theme.colorScheme.background,
+            appBar: AppBar(
+              title: Text(
+                loc.favorites,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontFamily: AppTextStyles.albraGroteskFontFamily,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              backgroundColor: theme.colorScheme.background,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
+                onPressed: widget.onBack ?? () => Navigator.pop(context),
+              ),
             ),
-          ),
+            body: SafeArea(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        loc.guestAccessRestricted,
+                        style: theme.textTheme.bodyLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const LoginScreen()),
+                          );
+                        },
+                        child: Text(loc.login),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        return Scaffold(
           backgroundColor: theme.colorScheme.background,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
-            onPressed: widget.onBack ?? () => Navigator.pop(context),
-          ),
-        ),
-        body: SafeArea(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    loc.guestAccessRestricted,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontFamily: AppTextStyles.albraGroteskFontFamily,
-                      color: theme.colorScheme.error,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.colorScheme.primary,
-                      foregroundColor: theme.colorScheme.onPrimary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                    ),
-                    child: Text(
-                      loc.login,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontFamily: AppTextStyles.albraGroteskFontFamily,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onPrimary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: theme.colorScheme.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: MediaQuery.of(context).size.width * 0.04,
-                  vertical: MediaQuery.of(context).size.height * 0.02,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                      onTap: widget.onBack ?? () => Navigator.pop(context),
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: ShapeDecoration(
-                          color: theme.colorScheme.onBackground,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(100)),
-                          ),
-                        ),
-                        child: Icon(Icons.arrow_back, color: theme.colorScheme.background),
-                      ),
-                    ),
-                    Text(
-                      loc.favorites,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontFamily: AppTextStyles.albraGroteskFontFamily,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: ShapeDecoration(
-                        color: theme.colorScheme.onBackground,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(100)),
-                        ),
-                      ),
-                      child: Icon(Icons.filter_list, color: theme.colorScheme.background),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.04),
+          body: SafeArea(
+            child: RefreshIndicator(
+              onRefresh: _refreshBooks,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      loc.savedBooks,
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontFamily: AppTextStyles.albraGroteskFontFamily,
-                        fontWeight: FontWeight.w600,
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: MediaQuery.of(context).size.width * 0.04,
+                        vertical: MediaQuery.of(context).size.height * 0.02,
                       ),
-                    ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.015),
-                    Container(
-                      width: MediaQuery.of(context).size.width * 0.9,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                      decoration: ShapeDecoration(
-                        color: theme.colorScheme.surface.withOpacity(0.5),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                        ),
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: loc.searchBooksOrAuthor,
-                          hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurface.withOpacity(0.6),
-                            fontFamily: AppTextStyles.albraGroteskFontFamily,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.025),
-                  ],
-                ),
-              ),
-              _filteredBooks.isEmpty
-                  ? SizedBox(
-                height: MediaQuery.of(context).size.height * 0.4,
-                child: Center(
-                  child: Text(
-                    loc.noBooksFound,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontFamily: AppTextStyles.albraGroteskFontFamily,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ),
-              )
-                  : SizedBox(
-                height: MediaQuery.of(context).size.height * 0.5,
-                child: ListView.builder(
-                  physics: const ClampingScrollPhysics(),
-                  padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.04),
-                  itemCount: _filteredBooks.length,
-                  itemBuilder: (context, index) {
-                    final book = _filteredBooks[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DetailsScreen(book: book),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: ShapeDecoration(
-                            color: theme.colorScheme.surface,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(12)),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: MediaQuery.of(context).size.width * 0.2,
-                                height: MediaQuery.of(context).size.width * 0.2,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: _buildBookCover(book),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          GestureDetector(
+                            onTap: widget.onBack ?? () => Navigator.pop(context),
+                            child: Container(
+                              width: 48,
+                              height: 48,
+                              decoration: ShapeDecoration(
+                                color: theme.colorScheme.surface,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(Radius.circular(100)),
                                 ),
                               ),
-                              SizedBox(width: MediaQuery.of(context).size.width * 0.04),
-                              Expanded(
+                              child: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
+                            ),
+                          ),
+                          Text(
+                            loc.favorites,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontFamily: AppTextStyles.albraGroteskFontFamily,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: ShapeDecoration(
+                              color: theme.colorScheme.surface,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(100)),
+                              ),
+                            ),
+                            child: Icon(Icons.filter_list, color: theme.colorScheme.onSurface),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.04),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            loc.savedBooks,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontFamily: AppTextStyles.albraGroteskFontFamily,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          if (_isLoading)
+                            const Center(child: CircularProgressIndicator())
+                          else if (_filteredBooks.isEmpty)
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text(
-                                      book.title,
-                                      style: theme.textTheme.titleMedium?.copyWith(
-                                        fontFamily: AppTextStyles.albraFontFamily,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
+                                    Icon(
+                                      Icons.favorite_border,
+                                      size: 48,
+                                      color: theme.colorScheme.onSurface.withOpacity(0.5),
                                     ),
+                                    const SizedBox(height: 16),
                                     Text(
-                                      book.author,
-                                      style: theme.textTheme.bodyMedium?.copyWith(
-                                        fontFamily: AppTextStyles.albraGroteskFontFamily,
-                                        fontWeight: FontWeight.w400,
-                                        color: theme.colorScheme.onBackground.withOpacity(0.7),
+                                      loc.noSavedBooks,
+                                      style: theme.textTheme.bodyLarge?.copyWith(
+                                        color: theme.colorScheme.onSurface.withOpacity(0.7),
                                       ),
-                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
                                     ),
                                   ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
+                            )
+                          else
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 0.7,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                              ),
+                              itemCount: _filteredBooks.length,
+                              itemBuilder: (context, index) {
+                                final book = _filteredBooks[index];
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DetailsScreen(book: book),
+                                      ),
+                                    ).then((_) => _refreshBooks());
+                                  },
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(12),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: theme.shadowColor.withOpacity(0.1),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 4),
+                                              ),
+                                            ],
+                                          ),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(12),
+                                            child: _buildBookCover(book),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        book.title,
+                                        style: theme.textTheme.titleMedium?.copyWith(
+                                          fontFamily: AppTextStyles.albraFontFamily,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        book.author,
+                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                        ],
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

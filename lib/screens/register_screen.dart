@@ -4,6 +4,8 @@ import '../services/auth_service.dart';
 import '../l10n/app_localizations.dart';
 import 'login_screen.dart';
 import 'personalize_screen.dart';
+import 'main_screen.dart';
+import 'package:dio/dio.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -36,50 +38,61 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _handleRegister() async {
+    if (!mounted) return;
     final loc = AppLocalizations.of(context);
-
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    if (!_isAccepted) {
-      setState(() {
-        _errorMessage = loc.acceptTerms;
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final result = await AuthService.register(
-        _usernameController.text.trim(),
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
-
-      if (!mounted) return;
-
-      if (result['success']) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
+    
+    if (_formKey.currentState?.validate() ?? false) {
+      setState(() => _isLoading = true);
+      try {
+        final result = await AuthService.register(
+          _usernameController.text.trim(),
+          _emailController.text.trim(),
+          _passwordController.text,
         );
-      } else {
-        setState(() {
-          _errorMessage = result['message'];
-          _isLoading = false;
-        });
+        
+        if (!mounted) return;
+        
+        if (result['success']) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+          );
+        } else {
+          setState(() {
+            _errorMessage = result['message'];
+            _isLoading = false;
+          });
+        }
+      } on DioException catch (e) {
+        if (!mounted) return;
+        String errorMessage = loc.errorOccurred;
+        
+        if (e.response?.data != null && e.response?.data is Map) {
+          final data = e.response?.data as Map;
+          if (data.containsKey('message')) {
+            errorMessage = data['message'].toString();
+          }
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc.errorOccurred),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
       }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _errorMessage = loc.errorOccurred;
-        _isLoading = false;
-      });
     }
   }
 

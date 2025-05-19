@@ -220,13 +220,15 @@ class _SearchScreenState extends State<SearchScreen> {
                       const SizedBox(height: 16),
                       _buildBookRow(
                         Book(
+                          id: '1',
                           title: 'Moby Dick',
                           author: 'Herman Melville',
                           genre: 'Drama',
                           coverUrl: 'images/book1.png',
-                          description: 'descr',
-                          fileName: 'filename',
                           pdfUrl: 'pdfs/test.pdf',
+                          isSynced: true,
+                          description: 'A classic novel about obsession and revenge',
+                          fileName: 'moby_dick.pdf',
                         ),
                       ),
                     ] else ...[

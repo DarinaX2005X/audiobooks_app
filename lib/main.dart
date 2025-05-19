@@ -1,4 +1,3 @@
-import 'package:audiobooks_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -16,39 +15,59 @@ import 'screens/splash_screen.dart';
 import 'screens/settings_screen.dart';
 import 'constants/theme_constants.dart';
 import 'models/book.dart';
+import 'models/category.dart';
 import 'services/settings_service.dart';
 import 'services/local_storage_service.dart';
+import 'package:audiobooks_app/services/auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Hive.initFlutter();
-  Hive.registerAdapter(BookAdapter());
-  await Hive.openBox<Book>(LocalStorageService.bookBoxName);
-  await Hive.openBox<String>(LocalStorageService.categoryBoxName);
-  await Hive.openBox<String>(LocalStorageService.pdfBoxName);
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-    DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight,
-  ]);
 
   try {
+    // Initialize Hive first
+    await Hive.initFlutter();
+    Hive.registerAdapter(BookAdapter());
+    await Hive.openBox(LocalStorageService.userBox);
+    print('✅ Hive initialized successfully');
+
+    // Initialize services in correct order
     await AuthService.init();
+    print('✅ AuthService initialized successfully');
+
+    await LocalStorageService.init();
+    print('✅ LocalStorageService initialized successfully');
+
+    // Initialize settings provider
     final settingsProvider = SettingsProvider();
     await settingsProvider.init();
+    print('✅ SettingsProvider initialized successfully');
+
+    // Set preferred orientations
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
     runApp(
-      ChangeNotifierProvider(
-        create: (_) => settingsProvider,
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: settingsProvider),
+          Provider.value(value: AuthService()),
+          Provider.value(value: LocalStorageService()),
+        ],
         child: const MyApp(),
       ),
     );
   } catch (e) {
-    print('Initialization error: $e');
+    print('❌ Error during initialization: $e');
+    // Show error screen or handle initialization failure
     runApp(
-      ChangeNotifierProvider(
-        create: (_) => SettingsProvider(),
-        child: const MyApp(),
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Text('Failed to initialize app: $e'),
+          ),
+        ),
       ),
     );
   }
@@ -66,17 +85,13 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       themeMode: settings.themeMode,
       locale: settings.locale,
-      localizationsDelegates: [
+      localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('en'),
-        Locale('ru'),
-        Locale('kk'),
-      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: const Color(0xFFF1EEE3),
@@ -128,6 +143,15 @@ class MyApp extends StatelessWidget {
         ),
       ),
       initialRoute: '/splash',
+      onGenerateRoute: (settings) {
+        if (settings.name == '/details') {
+          final book = settings.arguments as Book;
+          return MaterialPageRoute(
+            builder: (context) => DetailsScreen(book: book),
+          );
+        }
+        return null;
+      },
       routes: {
         '/splash': (context) => const SplashScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
@@ -135,11 +159,8 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/personalize': (context) => const PersonalizeScreen(),
         '/main': (context) => const MainScreen(),
-        '/forget_password': (context) => const ForgetPasswordScreen(),
+        '/forget-password': (context) => const ForgetPasswordScreen(),
         '/settings': (context) => const SettingsScreen(),
-        '/details': (context) => DetailsScreen(
-          book: ModalRoute.of(context)!.settings.arguments as Book,
-        ),
       },
     );
   }

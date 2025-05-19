@@ -1,7 +1,6 @@
 {
   "@@locale": "ru",
   "appTitle": "Приложение аудиокниг",
-  "login": "Войти",
   "register": "Зарегистрироваться",
   "forgetPassword": "Забыли пароль?",
   "sendResetLink": "Отправить ссылку для сброса",
@@ -22,11 +21,12 @@
   "invalidCredentials": "Неверный адрес электронной почты или пароль",
   "errorOccurred": "Произошла ошибка. Пожалуйста, попробуйте снова.",
   "resetLinkSent": "Ссылка для сброса пароля отправлена на вашу электронную почту!",
+  "registrationFailed": "Регистрация не удалась. Пожалуйста, попробуйте снова.",
   "favorites": "Избранное",
   "savedBooks": "Сохраненные книги",
-  "searchBooksOrAuthor": "Поиск книг или автора...",
+  "searchBooksOrAuthor": "Искать книги или автора...",
   "noBooksFound": "Книги не найдены",
-  "details": "Детали",
+  "details": "Подробности",
   "text": "Текст",
   "profile": "Профиль",
   "settings": "Настройки",
@@ -58,39 +58,131 @@
   "loggingOut": "Выход...",
   "errorLoadingProfile": "Произошла ошибка при загрузке вашего профиля",
   "retry": "Повторить",
-  "noBooksAvailable": "Книги недоступны",
-  "noBooksInCategory": "Книги в категории \"{category}\" не найдены",
-  "seeAll": "Смотреть все",
-  "heyUser": "Привет, {name}!\nЧто послушаешь сегодня?",
   "searchResults": "Результаты поиска",
-  "bookLanguageEnglish": "Английский",
-  "bookDurationTwoHours": "2 часа",
-  "bookDurationOneHour": "1:00:00",
+  "allCategory": "Все",
+  "fontSize": "Размер шрифта",
+  "continueAsGuest": "Продолжить как гость",
+  "addedToFavorites": "Успешно добавлено в избранное",
+  "removedFromFavorites": "Успешно удалено из избранного",
+  "errorUpdatingFavorites": "Не удалось обновить избранное: {error}",
+  "pageXofY": "Страница {currentPage} из {totalPages}",
+  "guestAccessRestricted": "Доступ для гостей ограничен. Пожалуйста, войдите.",
+  "login": "Войти",
+  "sync": "Синхронизация",
+  "syncSuccessful": "Данные успешно синхронизированы",
+  "syncFailed": "Не удалось синхронизировать данные: {error}",
+  "offlineCannotSync": "Невозможно синхронизировать в оффлайн-режиме",
+  "noBooksAvailable": "Нет доступных книг",
+  "noBooksInCategory": "В категории \"{category}\" нет книг",
+  "noSavedBooks": "У вас пока нет сохраненных книг",
+  "heyUser": "Привет, {username}!",
+  "offlineMode": "Оффлайн-режим",
+  "searchBooksOrAuthor": "Искать книги или автора",
+  "noResultsFound": "Результаты не найдены",
+  "recommendedGenres": "Рекомендуемые жанры",
   "genreFantasy": "Фэнтези",
   "genreDrama": "Драма",
-  "genreFiction": "Художественная литература",
-  "allCategory": "Все",
+  "genreFiction": "Фантастика",
   "genreDetective": "Детектив",
+  "latestSearch": "Последний поиск",
+  "seeAll": "Смотреть все",
+  "bookLanguageEnglish": "Английский",
+  "bookDurationTwoHours": "2 часа",
+  "bookDurationOneHour": "1 час",
+  "offlineCannotPlay": "Невозможно воспроизвести в оффлайн-режиме",
+  "offlineCannotAddToFavorites": "Невозможно добавить в избранное в оффлайн-режиме",
+  "errorLoadingData": "Ошибка загрузки данных: {error}",
+  "errorLoadingPdf": "Ошибка загрузки PDF: {error}",
+  "settings": "Настройки",
+  "appearance": "Внешний вид",
+  "lightTheme": "Светлая тема",
+  "darkTheme": "Темная тема",
+  "language": "Язык",
+  "english": "Английский",
+  "russian": "Русский",
+  "kazakh": "Казахский",
   "notifications": "Уведомления",
-  "enableNotifications": "Включить push-уведомления",
+  "enableNotifications": "Включить уведомления",
   "readingPreferences": "Настройки чтения",
-  "fontSize": "Размер шрифта",
   "fontSizeSmall": "Маленький",
   "fontSizeMedium": "Средний",
   "fontSizeLarge": "Большой",
   "dataSync": "Синхронизация данных",
-  "enableDataSync": "Включить автоматическую синхронизацию данных",
+  "enableDataSync": "Включить синхронизацию данных",
   "account": "Аккаунт",
+  "logout": "Выйти",
   "logoutConfirmation": "Вы уверены, что хотите выйти?",
   "cancel": "Отмена",
-  "offlineMode": "Оффлайн-режим: Используются кэшированные данные",
-  "sync": "Синхронизировать",
-  "offlineCannotSync": "Невозможно синхронизировать: Нет интернета",
-  "syncSuccessful": "Данные успешно синхронизированы",
-  "syncFailed": "Ошибка синхронизации: {error}",
-  "errorLoadingData": "Ошибка загрузки данных: {error}",
-  "errorLoadingPdf": "Не удалось загрузить PDF: {error}",
-  "offlineCannotPlay": "Невозможно воспроизвести аудио в оффлайн-режиме",
-  "continueAsGuest": "Продолжить как гость",
-  "guestAccessRestricted": "Пожалуйста, войдите, чтобы получить доступ к этой функции"
+  "read": "Читать",
+  "errorSavingProgress": "Не удалось сохранить прогресс: {error}",
+  "@pageXofY": {
+    "description": "Отображает текущую страницу и общее количество страниц",
+    "placeholders": {
+      "currentPage": {
+        "type": "int"
+      },
+      "totalPages": {
+        "type": "int"
+      }
+    }
+  },
+  "@errorUpdatingFavorites": {
+    "description": "Сообщение об ошибке при обновлении избранного",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "@syncFailed": {
+    "description": "Сообщение об ошибке синхронизации",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "@noBooksInCategory": {
+    "description": "Сообщение, когда в категории нет книг",
+    "placeholders": {
+      "category": {
+        "type": "Object"
+      }
+    }
+  },
+  "@heyUser": {
+    "description": "Приветствие с именем пользователя",
+    "placeholders": {
+      "username": {
+        "type": "Object"
+      }
+    }
+  },
+  "@errorLoadingData": {
+    "description": "Сообщение об ошибке загрузки данных",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "@errorLoadingPdf": {
+    "description": "Сообщение об ошибке загрузки PDF",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "@read": {
+    "description": "Надпись для кнопки чтения книги"
+  },
+  "@errorSavingProgress": {
+    "description": "Сообщение об ошибке при сохранении прогресса",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  }
 }

@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import 'main_screen.dart';
 import 'register_screen.dart';
 import 'forget_password_screen.dart';
+import 'package:dio/dio.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -68,10 +69,12 @@ class _LoginScreenState extends State<LoginScreen> {
       final success = await AuthService.login(
         _emailController.text.trim(),
         _passwordController.text,
+        _isRemembered,
       );
 
+      if (!mounted) return;
+
       if (success) {
-        if (!mounted) return;
         if (!_isRemembered) {
           // Handle non-remembered login case
         }
@@ -80,24 +83,57 @@ class _LoginScreenState extends State<LoginScreen> {
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       } else {
-        if (!mounted) return;
         setState(() {
           _errorMessage = loc.invalidCredentials;
           _isLoading = false;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc.invalidCredentials),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
       }
+    } on DioException catch (e) {
+      if (!mounted) return;
+      String errorMessage = loc.errorOccurred;
+      
+      if (e.response?.data != null && e.response?.data is Map) {
+        final data = e.response?.data as Map;
+        if (data.containsKey('message')) {
+          errorMessage = data['message'].toString();
+        }
+      }
+      
+      setState(() {
+        _errorMessage = errorMessage;
+        _isLoading = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _errorMessage = loc.errorOccurred;
         _isLoading = false;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(loc.errorOccurred),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 
   Future<void> _handleGuestLogin() async {
     if (!mounted) return;
-    await AuthService.setGuestMode(true); // Set guest mode
+    await AuthService.setGuestMode(true);
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const MainScreen()),

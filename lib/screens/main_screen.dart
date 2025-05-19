@@ -3,6 +3,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import '../services/api_servive.dart';
 import '../constants/theme_constants.dart';
 import '../models/book.dart';
+import '../models/category.dart'; // Добавляем импорт
 import '../services/auth_service.dart';
 import 'search_screen.dart';
 import 'library_screen.dart';
@@ -12,6 +13,7 @@ import 'login_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../services/local_storage_service.dart';
 import 'dart:async';
+import '../services/user_service.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -22,18 +24,33 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  final List<Book> books = [];
-  final List<String> categories = [];
-  String selectedCategory = '';
+  List<Book> books = [];
   bool isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
+  List<Book> _filteredBooks = [];
+  List<Category> categories = [];
+  Category? selectedCategory;
+  bool isGuest = false;
   bool isOffline = false;
   StreamSubscription<ConnectivityResult>? _connectivitySubscription;
+  String _userName = '';
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadBooks();
+    _loadCategories();
+    _loadUserData();
+    _checkGuestMode();
+    _searchController.addListener(_filterBooks);
     _setupConnectivityListener();
+    // Временный код для отладки Hive
+    LocalStorageService.getBooks().then((books) {
+      print('📦 Hive booksBox contains ${books.length} books:');
+      for (var book in books) {
+        print(' - ${book.title}, isFavorite: ${book.isFavorite}, progress: ${book.progressPage}');
+      }
+    });
   }
 
   @override
@@ -56,64 +73,59 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _loadData() async {
-    setState(() {
-      isLoading = true;
-    });
-
     try {
-      final connectivity = await Connectivity().checkConnectivity();
-      final offline = connectivity == ConnectivityResult.none;
-
+      setState(() => isLoading = true);
+      
+      // First load from local storage
+      final localBooks = await LocalStorageService.getBooks();
       setState(() {
-        isOffline = offline;
+        books.clear();
+        books.addAll(localBooks);
       });
 
-      if (offline) {
-        final cachedBooks = await LocalStorageService.getBooks();
-        final cachedCategories = await LocalStorageService.getCategories();
-        setState(() {
-          books
-            ..clear()
-            ..addAll(cachedBooks);
-          categories
-            ..clear()
-            ..addAll(cachedCategories.isEmpty ? ['All'] : cachedCategories);
-          selectedCategory = categories.contains(selectedCategory) ? selectedCategory : 'All';
-          isLoading = false;
-        });
-      } else {
-        final fetchedCategories = await ApiService.fetchCategories();
-        final fetchedBooks = await ApiService.fetchBooks();
-
-        // Cache PDFs for each book
-        for (var book in fetchedBooks) {
-          if (book.pdfUrl.isNotEmpty) {
-            await LocalStorageService.cachePdf(book.pdfUrl, book.title);
+      // Then try to load from server if online
+      if (!isOffline) {
+        try {
+          final loadedCategories = await ApiService.getCategories();
+          final serverBooks = await ApiService.getBooks();
+          setState(() {
+            categories
+              ..clear()
+              ..addAll([Category(name: 'All'), ...loadedCategories]);
+            books
+              ..clear()
+              ..addAll(serverBooks);
+            selectedCategory = loadedCategories.isNotEmpty ? loadedCategories.first : null;
+          });
+        } catch (e) {
+          print('⚠️ Error loading from server: $e');
+          // If server load fails, keep local books
+          if (books.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(AppLocalizations.of(context).offlineMode)),
+            );
           }
         }
-
+      } else {
+        // If offline, try to load categories from local storage
+        final localGenres = books.map((book) => book.genre).toSet().toList();
+        final localCategories = localGenres.map((g) => Category(name: g)).toList();
         setState(() {
           categories
             ..clear()
-            ..add('All')
-            ..addAll(fetchedCategories.map((c) => c.name));
-          books
-            ..clear()
-            ..addAll(fetchedBooks);
-          selectedCategory = 'All';
-          isLoading = false;
+            ..addAll([Category(name: 'All'), ...localCategories]);
+          selectedCategory = localCategories.isNotEmpty ? localCategories.first : null;
         });
-
-        await LocalStorageService.saveBooks(fetchedBooks);
-        await LocalStorageService.saveCategories(categories);
       }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).errorLoadingData(e.toString()))),
-      );
+      print('⚠️ Error in _loadData: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    } finally {
+      setState(() => isLoading = false);
     }
   }
 
@@ -142,8 +154,8 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildBookCover(Book book) {
-    final coverUrl = book.coverUrl;
-    if (coverUrl == null || coverUrl.isEmpty) {
+    final coverUrl = book.coverUrl ?? '';
+    if (coverUrl.isEmpty) {
       return Container(
         color: Colors.grey.shade200,
         child: const Icon(Icons.book, size: 50),
@@ -206,7 +218,7 @@ class _MainScreenState extends State<MainScreen> {
 
     Map<String, List<Book>> booksByGenre = {};
     for (var book in books) {
-      if (selectedCategory == 'All' || book.genre == selectedCategory) {
+      if (selectedCategory?.name == 'All' || book.genre == selectedCategory!.name) {
         final genre = book.genre.isNotEmpty ? book.genre : 'Uncategorized';
         booksByGenre.putIfAbsent(genre, () => []).add(book);
       }
@@ -218,7 +230,9 @@ class _MainScreenState extends State<MainScreen> {
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Text(
-              AppLocalizations.of(context).noBooksInCategory(selectedCategory),
+              selectedCategory?.name == 'All' 
+                  ? AppLocalizations.of(context).noBooksAvailable
+                  : AppLocalizations.of(context).noBooksInCategory(selectedCategory?.name ?? ''),
               style: theme.textTheme.bodyLarge,
             ),
           ),
@@ -349,7 +363,7 @@ class _MainScreenState extends State<MainScreen> {
             child: Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.only(top: 20),
+                  padding: const EdgeInsets.only(top: 60),
                   decoration: BoxDecoration(color: theme.colorScheme.background),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -453,7 +467,7 @@ class _MainScreenState extends State<MainScreen> {
                                       ),
                                     ),
                                     child: Text(
-                                      category,
+                                      category.name,
                                       style: theme.textTheme.bodyMedium?.copyWith(
                                         color: isSelected
                                             ? theme.colorScheme.onSurface
@@ -508,123 +522,124 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  Future<bool> _checkGuestMode() async {
+    return await AuthService.isGuestMode();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final loc = AppLocalizations.of(context);
-
-    return FutureBuilder<bool>(
-      future: AuthService.isGuestMode(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Scaffold(
-            backgroundColor: theme.colorScheme.background,
-            body: const Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        final isGuest = snapshot.data!;
-        Widget currentScreen;
-
-        switch (_selectedIndex) {
-          case 0:
-            currentScreen = _buildMainContent();
-            break;
-          case 1:
-            currentScreen = SearchScreen(
-              onBack: () => setState(() => _selectedIndex = 0),
-            );
-            break;
-          case 2:
-            if (isGuest) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(loc.guestAccessRestricted),
-                    action: SnackBarAction(
-                      label: loc.login,
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LoginScreen()),
-                        );
-                      },
-                    ),
-                  ),
-                );
-              });
-              currentScreen = _buildMainContent();
-              _selectedIndex = 0;
-            } else {
-              currentScreen = LibraryScreen(
-                onBack: () => setState(() => _selectedIndex = 0),
-              );
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.background,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: FutureBuilder<bool>(
+          future: _checkGuestMode(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
             }
-            break;
-          case 3:
-            if (isGuest) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(loc.guestAccessRestricted),
-                    action: SnackBarAction(
-                      label: loc.login,
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LoginScreen()),
-                        );
-                      },
-                    ),
-                  ),
-                );
-              });
-              currentScreen = _buildMainContent();
-              _selectedIndex = 0;
-            } else {
-              currentScreen = ProfileScreen(
-                onBack: () => setState(() => _selectedIndex = 0),
-              );
-            }
-            break;
-          default:
-            currentScreen = _buildMainContent();
-        }
 
-        return Scaffold(
-          backgroundColor: theme.colorScheme.background,
-          body: GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: currentScreen,
-          ),
-          bottomNavigationBar: Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(13),
-            decoration: ShapeDecoration(
-              color: theme.colorScheme.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(100),
-              ),
-              shadows: [
-                BoxShadow(
-                  color: theme.shadowColor.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
+            final isGuest = snapshot.data!;
+            Widget currentScreen;
+
+            switch (_selectedIndex) {
+              case 0:
+                currentScreen = _buildMainContent();
+                break;
+              case 1:
+                currentScreen = SearchScreen(
+                  onBack: () => setState(() => _selectedIndex = 0),
+                );
+                break;
+              case 2:
+                if (isGuest) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(AppLocalizations.of(context).guestAccessRestricted),
+                        action: SnackBarAction(
+                          label: AppLocalizations.of(context).login,
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => const LoginScreen()),
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  });
+                  currentScreen = _buildMainContent();
+                  _selectedIndex = 0;
+                } else {
+                  currentScreen = LibraryScreen(
+                    onBack: () => setState(() => _selectedIndex = 0),
+                  );
+                }
+                break;
+              case 3:
+                if (isGuest) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(AppLocalizations.of(context).guestAccessRestricted),
+                        action: SnackBarAction(
+                          label: AppLocalizations.of(context).login,
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => const LoginScreen()),
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  });
+                  currentScreen = _buildMainContent();
+                  _selectedIndex = 0;
+                } else {
+                  currentScreen = ProfileScreen(
+                    onBack: () => setState(() => _selectedIndex = 0),
+                  );
+                }
+                break;
+              default:
+                currentScreen = _buildMainContent();
+            }
+
+            return Scaffold(
+              backgroundColor: Theme.of(context).colorScheme.background,
+              body: currentScreen,
+              bottomNavigationBar: Container(
+                margin: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(13),
+                decoration: ShapeDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  shadows: [
+                    BoxShadow(
+                      color: Theme.of(context).shadowColor.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(Icons.home, 0),
-                _buildNavItem(Icons.search, 1),
-                _buildNavItem(Icons.favorite, 2),
-                _buildNavItem(Icons.person, 3),
-              ],
-            ),
-          ),
-        );
-      },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildNavItem(Icons.home, 0),
+                    _buildNavItem(Icons.search, 1),
+                    _buildNavItem(Icons.favorite, 2),
+                    _buildNavItem(Icons.person, 3),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -650,5 +665,186 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _loadBooks() async {
+    if (!mounted) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // First try to load from local storage
+      final localBooks = await LocalStorageService.getBooks();
+      if (localBooks.isNotEmpty) {
+        setState(() {
+          books = localBooks;
+          _filteredBooks = localBooks;
+          isLoading = false;
+        });
+      }
+
+      // Then try to sync with server
+      final serverBooks = await ApiService.getBooks();
+      
+      if (serverBooks != null && serverBooks.isNotEmpty) {
+        // Merge server books with local books, preserving local favorites
+        final mergedBooks = serverBooks.map((serverBook) {
+          final localBook = localBooks.firstWhere(
+            (local) => local.id == serverBook.id,
+            orElse: () => serverBook,
+          );
+          return serverBook.copyWith(
+            isFavorite: localBook.isFavorite,
+          );
+        }).toList();
+
+        await LocalStorageService.saveBooks(mergedBooks);
+        
+        if (mounted) {
+          setState(() {
+            books = mergedBooks;
+            _filteredBooks = mergedBooks;
+            isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading books: $e');
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final loadedCategories = await ApiService.getCategories();
+      if (loadedCategories.isNotEmpty && mounted) {
+        setState(() {
+          categories = [Category(name: 'All'), ...loadedCategories];
+          selectedCategory = categories.first;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading categories: $e');
+    }
+  }
+
+  void _filterBooks() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredBooks = books.where((book) {
+        final matchesCategory = selectedCategory?.name == 'All' ||
+            book.genre == selectedCategory!.name;
+        return matchesCategory;
+      }).toList();
+    });
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final result = await UserService.fetchUserProfile();
+      if (result['success'] && mounted) {
+        setState(() {
+          _userName = result['user']['name'] ?? '';
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading user data: $e');
+    }
+  }
+
+  Widget _buildHomeTab() {
+    final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  loc.heyUser(_userName),
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontFamily: AppTextStyles.albraFontFamily,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: categories.map((category) {
+                      bool isSelected = selectedCategory?.name == category.name;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedCategory = category;
+                            });
+                            _filterBooks();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 14,
+                            ),
+                            decoration: ShapeDecoration(
+                              color: isSelected
+                                  ? theme.colorScheme.surface
+                                  : theme.colorScheme.surface.withOpacity(0.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                            ),
+                            child: Text(
+                              category.name,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: isSelected
+                                    ? theme.colorScheme.onSurface
+                                    : theme.colorScheme.onSurface.withOpacity(0.7),
+                                fontFamily: AppTextStyles.albraGroteskFontFamily,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                if (isLoading)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                else
+                  ..._buildBookSections(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLibraryTab() {
+    return const LibraryScreen();
+  }
+
+  Widget _buildProfileTab() {
+    return const ProfileScreen();
   }
 }

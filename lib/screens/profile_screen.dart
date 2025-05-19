@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../constants/theme_constants.dart';
 import '../l10n/app_localizations.dart';
+import '../services/api_servive.dart'; // Updated to match your import
 import '../services/user_service.dart';
 import '../services/auth_service.dart';
+import '../services/local_storage_service.dart';
 import 'settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -18,20 +20,19 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
   String? _errorMessage;
-  Map<String, dynamic> _userData = {};
-
-  // User stats from the API
+  Map<String, dynamic>? _userData;
   int _favoritesCount = 0;
   int _inProgressCount = 0;
+  Map<String, dynamic>? _userProfile;
 
   @override
   void initState() {
     super.initState();
-    _loadUserProfile();
+    LocalStorageService.init(); // Initialize local storage cache
+    _loadUserData();
   }
 
-  // Load user profile data from API
-  Future<void> _loadUserProfile() async {
+  Future<void> _loadUserData() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -39,19 +40,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     try {
       final result = await UserService.fetchUserProfile();
+      Map<String, dynamic>? profile;
+
+      try {
+        profile = await ApiService.getUserProfile();
+      } catch (e) {
+        print('⚠️ Error fetching server profile: $e');
+      }
 
       if (mounted) {
         setState(() {
           _isLoading = false;
           if (result['success']) {
             _userData = result['user'];
+            _userProfile = profile;
 
-            // Process additional user data
-            _favoritesCount = (_userData['favorites'] as List?)?.length ?? 0;
-            _inProgressCount = (_userData['progress'] as List?)?.length ?? 0;
+            // Get favorites and progress from server
+            final serverFavorites = (profile?['favorites'] as List?) ?? [];
+            final serverProgress = (profile?['progress'] as Map?) ?? {};
+
+            _favoritesCount = serverFavorites.length;
+            _inProgressCount = serverProgress.entries
+                .where((e) => e.value != null && e.value > 0)
+                .length;
           } else {
             _errorMessage = result['message'];
-            // If authentication error, navigate to login
             if (result['message']?.contains('authentication') ?? false) {
               Future.delayed(const Duration(seconds: 2), () {
                 if (mounted) {
@@ -67,15 +80,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           _isLoading = false;
           _errorMessage = AppLocalizations.of(context).errorLoadingProfile;
+          _favoritesCount = 0;
+          _inProgressCount = 0;
         });
       }
     }
   }
 
-  // Format date for display
   String _formatDate(String? dateString) {
     if (dateString == null) return 'Not available';
-
     try {
       final date = DateTime.parse(dateString);
       return DateFormat('MMM d, yyyy').format(date);
@@ -84,10 +97,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Handle user logout
   Future<void> _handleLogout() async {
     final loc = AppLocalizations.of(context);
-    // Show loading dialog
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -96,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const CircularProgressIndicator(),
                 const SizedBox(width: 20),
@@ -108,31 +119,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       },
     );
 
-    // Call logout
     try {
-      final success = await AuthService.logout();
-
+      await AuthService.logout();
       if (!mounted) return;
-
-      // Close loading dialog
       Navigator.of(context).pop();
-
-      if (success) {
-        // Navigate to login screen
-        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-      } else {
-        // Show error
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(loc.logoutFailed)),
-        );
-      }
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
     } catch (e) {
       if (!mounted) return;
-
-      // Close loading dialog
       Navigator.of(context).pop();
-
-      // Show error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(loc.errorOccurred)),
       );
@@ -156,7 +150,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Error view when profile loading fails
   Widget _buildErrorView() {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context);
@@ -177,7 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: _loadUserProfile,
+              onPressed: _loadUserData,
               child: Text(loc.retry),
             ),
           ],
@@ -186,18 +179,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Main profile content when data is loaded
   Widget _buildProfileContent() {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context);
     return RefreshIndicator(
-      onRefresh: _loadUserProfile,
+      onRefresh: _loadUserData,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with back button and settings button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               child: Row(
@@ -249,7 +240,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-            // Profile image and user info
             Center(
               child: Column(
                 children: [
@@ -267,14 +257,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    _userData['name'] ?? 'User Name',
+                    _userData?['name'] ?? 'User Name',
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontFamily: AppTextStyles.albraFontFamily,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _userData['email'] ?? 'email@example.com',
+                    _userData?['email'] ?? 'email@example.com',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onBackground.withOpacity(0.6),
                     ),
@@ -283,7 +273,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            // Stats row
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
@@ -303,7 +292,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            // Profile details
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -327,15 +315,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         _buildProfileRow(
                           loc.joined,
-                          _formatDate(_userData['createdAt']),
+                          _formatDate(_userData?['createdAt']),
                         ),
                         _buildProfileRow(
                           loc.lastActive,
-                          _formatDate(_userData['lastActive']),
+                          _formatDate(_userData?['lastActive']),
                         ),
                         _buildProfileRow(
                           loc.booksRead,
-                          '${_userData['booksRead'] ?? 0}',
+                          '${_userData?['booksRead'] ?? 0}',
                         ),
                       ],
                     ),
@@ -344,7 +332,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            // Logout button
             Padding(
               padding: const EdgeInsets.all(20),
               child: SizedBox(
@@ -369,7 +356,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Widget for user stats cards (favorites, in-progress)
   Widget _buildStatCard(String title, String value, IconData icon) {
     final theme = Theme.of(context);
     return Container(
@@ -430,5 +416,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      setState(() => _isLoading = true);
+      final profile = await ApiService.getUserProfile();
+      setState(() {
+        _userProfile = profile;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
   }
 }

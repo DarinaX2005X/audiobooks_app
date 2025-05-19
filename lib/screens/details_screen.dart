@@ -3,6 +3,9 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import '../constants/theme_constants.dart';
 import '../l10n/app_localizations.dart';
 import '../models/book.dart';
+import '../services/api_servive.dart';
+import '../services/auth_service.dart';
+import '../services/local_storage_service.dart';
 import 'text_screen.dart';
 
 class DetailsScreen extends StatefulWidget {
@@ -18,11 +21,16 @@ class _DetailsScreenState extends State<DetailsScreen> {
   bool _isPlaying = false;
   double _progressValue = 0.0;
   bool isOffline = false;
+  bool _isFavorite = false;
+  bool _isLoading = false;
+  Book? _book;
 
   @override
   void initState() {
     super.initState();
     _checkConnectivity();
+    _loadUserProfile();
+    _loadBookDetails();
   }
 
   Future<void> _checkConnectivity() async {
@@ -30,6 +38,85 @@ class _DetailsScreenState extends State<DetailsScreen> {
     setState(() {
       isOffline = connectivity == ConnectivityResult.none;
     });
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      final userProfile = await ApiService.getUserProfile();
+      if (userProfile != null) {
+        final favorites = userProfile['favorites'] as List;
+        final progress = userProfile['progress'] as Map<String, dynamic>;
+        
+        setState(() {
+          _isFavorite = favorites.any((fav) => fav['audiobookId'] == widget.book.id);
+          if (progress.containsKey(widget.book.id)) {
+            _progressValue = progress[widget.book.id] / 100;
+          }
+        });
+      }
+    } catch (e) {
+      print('Error loading user profile: $e');
+    }
+  }
+
+  Future<void> _loadBookDetails() async {
+    try {
+      setState(() => _isLoading = true);
+      final book = await ApiService.getBookDetails(widget.book.id);
+      if (book != null) {
+        setState(() {
+          _book = book;
+          _isLoading = false;
+        });
+      } else {
+        throw Exception('Book not found');
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    if (isOffline) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).offlineCannotAddToFavorites)),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      if (_isFavorite) {
+        await ApiService.removeFromFavorites(widget.book.id);
+      } else {
+        await ApiService.addToFavorites(widget.book.id);
+      }
+      
+      setState(() {
+        _isFavorite = !_isFavorite;
+      });
+    } catch (e) {
+      print('Error toggling favorite: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).errorOccurred)),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<bool> _checkGuestMode() async {
+    return await AuthService.isGuestMode();
   }
 
   Widget _buildBookCover() {
@@ -115,29 +202,57 @@ class _DetailsScreenState extends State<DetailsScreen> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => TextScreen(book: widget.book),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: ShapeDecoration(
-                              color: theme.colorScheme.surface,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(100)),
+                        Row(
+                          children: [
+                            GestureDetector(
+                              onTap: _toggleFavorite,
+                              child: Container(
+                                width: 48,
+                                height: 48,
+                                decoration: ShapeDecoration(
+                                  color: theme.colorScheme.surface,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(100)),
+                                  ),
+                                ),
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(),
+                                      )
+                                    : Icon(
+                                        _isFavorite ? Icons.favorite : Icons.favorite_border,
+                                        color: _isFavorite ? AppColors.accentRed : theme.colorScheme.onSurface,
+                                      ),
                               ),
                             ),
-                            child: Icon(
-                              Icons.more_vert,
-                              color: theme.colorScheme.onSurface,
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TextScreen(book: widget.book),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                width: 48,
+                                height: 48,
+                                decoration: ShapeDecoration(
+                                  color: theme.colorScheme.surface,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(100)),
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.book,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ],
                     ),

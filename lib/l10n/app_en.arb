@@ -1,7 +1,6 @@
 {
   "@@locale": "en",
   "appTitle": "Audiobooks App",
-  "login": "Login",
   "register": "Register",
   "forgetPassword": "Forget Password?",
   "sendResetLink": "Send Reset Link",
@@ -24,31 +23,15 @@
   "resetLinkSent": "Reset link sent to your email!",
   "favorites": "Favorites",
   "savedBooks": "Saved books",
-  "searchBooksOrAuthor": "Search Books or Author...",
   "noBooksFound": "No books found",
-  "details": "Details",
   "text": "Text",
   "profile": "Profile",
-  "settings": "Settings",
-  "logout": "Logout",
-  "search": "Search",
-  "explore": "Explore",
-  "recommendedGenres": "Recommended genres",
-  "latestSearch": "Latest search",
-  "noResultsFound": "No results found",
   "personalizeSuggestion": "Personalize Suggestion",
   "chooseGenres": "Choose min. 3 genres, we will give you more that relate to it.",
   "skip": "Skip",
   "continueText": "Continue",
   "onboardingTitle": "Choose Your\nFavourite Genre",
   "next": "Next",
-  "appearance": "Appearance",
-  "language": "Language",
-  "lightTheme": "Light theme",
-  "darkTheme": "Dark theme",
-  "english": "English",
-  "russian": "Russian",
-  "kazakh": "Kazakh",
   "profileDetails": "Profile Details",
   "joined": "Joined",
   "lastActive": "Last Active",
@@ -58,39 +41,134 @@
   "loggingOut": "Logging out...",
   "errorLoadingProfile": "An error occurred loading your profile",
   "retry": "Retry",
-  "noBooksAvailable": "No books available",
-  "noBooksInCategory": "No books found in the \"{category}\" category",
-  "seeAll": "See all",
-  "heyUser": "Hey, {name}!\nWhat will you listen today?",
   "searchResults": "Search results",
-  "bookLanguageEnglish": "English",
-  "bookDurationTwoHours": "2 hours",
-  "bookDurationOneHour": "1:00:00",
+  "allCategory": "All",
+  "fontSize": "Font Size",
+  "continueAsGuest": "Continue as Guest",
+  "addedToFavorites": "Successfully added to favorites",
+  "removedFromFavorites": "Successfully removed from favorites",
+  "errorUpdatingFavorites": "Failed to update favorites: {error}",
+  "pageXofY": "Page {currentPage} of {totalPages}",
+  "guestAccessRestricted": "Guest access restricted. Please log in.",
+  "login": "Login",
+  "sync": "Sync",
+  "syncSuccessful": "Data synced successfully",
+  "syncFailed": "Failed to sync data: {error}",
+  "offlineCannotSync": "Cannot sync in offline mode",
+  "noBooksAvailable": "No books available",
+  "noBooksInCategory": "No books in category {category}",
+  "noSavedBooks": "You haven't saved any books yet",
+  "heyUser": "Hey, {username}!",
+  "offlineMode": "Offline mode",
+  "search": "Search",
+  "explore": "Explore",
+  "searchBooksOrAuthor": "Search books or author",
+  "noResultsFound": "No results found",
+  "recommendedGenres": "Recommended Genres",
   "genreFantasy": "Fantasy",
   "genreDrama": "Drama",
   "genreFiction": "Fiction",
-  "allCategory": "All",
   "genreDetective": "Detective",
+  "latestSearch": "Latest Search",
+  "seeAll": "See all",
+  "bookLanguageEnglish": "English",
+  "bookDurationTwoHours": "2 hours",
+  "bookDurationOneHour": "1 hour",
+  "offlineCannotPlay": "Cannot play in offline mode",
+  "offlineCannotAddToFavorites": "Cannot add to favorites in offline mode",
+  "details": "Details",
+  "errorLoadingData": "Error loading data: {error}",
+  "errorLoadingPdf": "Error loading PDF: {error}",
+  "settings": "Settings",
+  "appearance": "Appearance",
+  "lightTheme": "Light Theme",
+  "darkTheme": "Dark Theme",
+  "language": "Language",
+  "english": "English",
+  "russian": "Russian",
+  "kazakh": "Kazakh",
   "notifications": "Notifications",
-  "enableNotifications": "Enable push notifications",
+  "enableNotifications": "Enable Notifications",
   "readingPreferences": "Reading Preferences",
-  "fontSize": "Font Size",
   "fontSizeSmall": "Small",
   "fontSizeMedium": "Medium",
   "fontSizeLarge": "Large",
   "dataSync": "Data Sync",
-  "enableDataSync": "Enable automatic data sync",
+  "enableDataSync": "Enable Data Sync",
   "account": "Account",
-  "logoutConfirmation": "Are you sure you want to log out?",
+  "logout": "Logout",
+  "logoutConfirmation": "Are you sure you want to logout?",
   "cancel": "Cancel",
-  "offlineMode": "Offline Mode: Using cached data",
-  "sync": "Sync",
-  "offlineCannotSync": "Cannot sync: No internet connection",
-  "syncSuccessful": "Data synced successfully",
-  "syncFailed": "Sync failed: {error}",
-  "errorLoadingData": "Error loading data: {error}",
-  "errorLoadingPdf": "Failed to load PDF: {error}",
-  "offlineCannotPlay": "Cannot play audio offline",
-  "continueAsGuest": "Continue as Guest",
-  "guestAccessRestricted": "Please log in to access this feature"
+  "@pageXofY": {
+    "description": "Displays current page and total pages",
+    "placeholders": {
+      "currentPage": {
+        "type": "int"
+      },
+      "totalPages": {
+        "type": "int"
+      }
+    }
+  },
+  "@errorUpdatingFavorites": {
+    "description": "Error message for failed favorites update",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "@syncFailed": {
+    "description": "Error message for failed sync",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "@noBooksInCategory": {
+    "description": "Message when no books are found in a category",
+    "placeholders": {
+      "category": {
+        "type": "Object"
+      }
+    }
+  },
+  "@heyUser": {
+    "description": "Greeting with user name",
+    "placeholders": {
+      "username": {
+        "type": "Object"
+      }
+    }
+  },
+  "@errorLoadingData": {
+    "description": "Error message for data loading failure",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "@errorLoadingPdf": {
+    "description": "Error message for PDF loading failure",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "read": "Read",
+  "@read": {
+    "description": "Label for the button to read a book"
+  },
+  "errorSavingProgress": "Failed to save progress: {error}",
+  "@errorSavingProgress": {
+    "description": "Error message for failed progress saving",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  }
 }

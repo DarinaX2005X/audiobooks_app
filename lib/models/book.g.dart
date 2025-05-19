@@ -18,39 +18,45 @@ class BookAdapter extends TypeAdapter<Book> {
     };
     return Book(
       title: fields[0] as String,
-      description: fields[1] as String,
-      author: fields[4] as String,
-      genre: fields[5] as String,
-      fileName: fields[2] as String,
-      coverUrl: fields[3] as String,
-      pdfUrl: fields[6] as String,
-      isSynced: fields[7] as bool,
-      isFavorite: fields[8] as bool?,
+      author: fields[1] as String,
+      genre: fields[2] as String,
+      coverUrl: fields[3] as String?,
+      pdfUrl: fields[4] as String?,
+      isSynced: fields[5] as bool,
+      id: fields[6] as String,
+      isFavorite: fields[7] as bool?,
+      progressPage: fields[8] as int?,
+      description: fields[9] as String?,
+      fileName: fields[10] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Book obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.title)
       ..writeByte(1)
-      ..write(obj.description)
+      ..write(obj.author)
       ..writeByte(2)
-      ..write(obj.fileName)
+      ..write(obj.genre)
       ..writeByte(3)
       ..write(obj.coverUrl)
       ..writeByte(4)
-      ..write(obj.author)
-      ..writeByte(5)
-      ..write(obj.genre)
-      ..writeByte(6)
       ..write(obj.pdfUrl)
-      ..writeByte(7)
+      ..writeByte(5)
       ..write(obj.isSynced)
+      ..writeByte(6)
+      ..write(obj.id)
+      ..writeByte(7)
+      ..write(obj.isFavorite)
       ..writeByte(8)
-      ..write(obj.isFavorite);
+      ..write(obj.progressPage)
+      ..writeByte(9)
+      ..write(obj.description)
+      ..writeByte(10)
+      ..write(obj.fileName);
   }
 
   @override

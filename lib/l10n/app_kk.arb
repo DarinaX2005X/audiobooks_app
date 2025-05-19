@@ -1,7 +1,6 @@
 {
   "@@locale": "kk",
   "appTitle": "Аудиокітаптар қосымшасы",
-  "login": "Кіру",
   "register": "Тіркелу",
   "forgetPassword": "Құпия сөзді ұмыттыңыз ба?",
   "sendResetLink": "Қалпына келтіру сілтемесін жіберу",
@@ -24,31 +23,15 @@
   "resetLinkSent": "Қалпына келтіру сілтемесі сіздің электрондық поштаңызға жіберілді!",
   "favorites": "Таңдаулылар",
   "savedBooks": "Сақталған кітаптар",
-  "searchBooksOrAuthor": "Кітаптарды немесе авторды іздеу...",
   "noBooksFound": "Кітаптар табылмады",
-  "details": "Мәліметтер",
   "text": "Мәтін",
   "profile": "Профиль",
-  "settings": "Параметрлер",
-  "logout": "Шығу",
-  "search": "Іздеу",
-  "explore": "Зерттеу",
-  "recommendedGenres": "Ұсынылған жанрлар",
-  "latestSearch": "Соңғы іздеу",
-  "noResultsFound": "Нәтижелер табылмады",
   "personalizeSuggestion": "Ұсыныстарды жекелендіру",
   "chooseGenres": "Кемінде 3 жанрды таңдаңыз, біз сізге сәйкес көбірек ұсынамыз.",
   "skip": "Өткізу",
   "continueText": "Жалғастыру",
   "onboardingTitle": "Сүйікті жанрыңызды\nтаңдаңыз",
   "next": "Келесі",
-  "appearance": "Сыртқы түрі",
-  "language": "Тіл",
-  "lightTheme": "Ашық тақырып",
-  "darkTheme": "Қараңғы тақырып",
-  "english": "Ағылшын",
-  "russian": "Орыс",
-  "kazakh": "Қазақ",
   "profileDetails": "Профиль мәліметтері",
   "joined": "Қосылған күні",
   "lastActive": "Соңғы белсенділік",
@@ -58,39 +41,134 @@
   "loggingOut": "Шығуда...",
   "errorLoadingProfile": "Профильді жүктеу кезінде қате пайда болды",
   "retry": "Қайталау",
-  "noBooksAvailable": "Кітаптар қолжетімді емес",
-  "noBooksInCategory": "\"{category}\" категориясында кітаптар табылмады",
-  "seeAll": "Барлығын көру",
-  "heyUser": "Сәлем, {name}!\nБүгін не тыңдайсың?",
   "searchResults": "Іздеу нәтижелері",
-  "bookLanguageEnglish": "Ағылшын",
-  "bookDurationTwoHours": "2 сағат",
-  "bookDurationOneHour": "1:00:00",
+  "allCategory": "Барлығы",
+  "fontSize": "Қаріп өлшемі",
+  "continueAsGuest": "Қонақ ретінде жалғастыру",
+  "addedToFavorites": "Сәтті таңдаулыларға қосылды",
+  "removedFromFavorites": "Сәтті таңдаулылардан жойылды",
+  "errorUpdatingFavorites": "Таңдаулыларды жаңарту сәтсіз аяқталды: {error}",
+  "pageXofY": "{currentPage} / {totalPages} бет",
+  "guestAccessRestricted": "Қонақтарға кіру шектелген. Кіріңіз.",
+  "login": "Кіру",
+  "sync": "Синхрондау",
+  "syncSuccessful": "Деректер сәтті синхрондалды",
+  "syncFailed": "Деректерді синхрондау сәтсіз аяқталды: {error}",
+  "offlineCannotSync": "Оффлайн режимде синхрондау мүмкін емес",
+  "noBooksAvailable": "Қолжетімді кітаптар жоқ",
+  "noBooksInCategory": "\"{category}\" санатында кітаптар жоқ",
+  "noSavedBooks": "Сізде әзірше сақталған кітаптар жоқ",
+  "heyUser": "Сәлем, {username}!",
+  "offlineMode": "Оффлайн режим",
+  "search": "Іздеу",
+  "explore": "Зерттеу",
+  "searchBooksOrAuthor": "Кітаптарды немесе авторды іздеу",
+  "noResultsFound": "Нәтижелер табылмады",
+  "recommendedGenres": "Ұсынылған жанрлар",
   "genreFantasy": "Фэнтези",
   "genreDrama": "Драма",
   "genreFiction": "Фантастика",
-  "allCategory": "Барлығы",
   "genreDetective": "Детектив",
+  "latestSearch": "Соңғы іздеу",
+  "seeAll": "Барлығын көру",
+  "bookLanguageEnglish": "Ағылшын",
+  "bookDurationTwoHours": "2 сағат",
+  "bookDurationOneHour": "1 сағат",
+  "offlineCannotPlay": "Оффлайн режимде ойнату мүмкін емес",
+  "offlineCannotAddToFavorites": "Оффлайн режимде таңдаулыларға қосу мүмкін емес",
+  "details": "Егжей-тегжейлер",
+  "errorLoadingData": "Деректерді жүктеу қатесі: {error}",
+  "errorLoadingPdf": "PDF жүктеу қатесі: {error}",
+  "settings": "Параметрлер",
+  "appearance": "Сыртқы түрі",
+  "lightTheme": "Жарық тақырып",
+  "darkTheme": "Қараңғы тақырып",
+  "language": "Тіл",
+  "english": "Ағылшын",
+  "russian": "Орыс",
+  "kazakh": "Қазақ",
   "notifications": "Хабарламалар",
-  "enableNotifications": "Push-хабарламаларды қосу",
+  "enableNotifications": "Хабарламаларды қосу",
   "readingPreferences": "Оқу параметрлері",
-  "fontSize": "Қаріп өлшемі",
   "fontSizeSmall": "Кіші",
   "fontSizeMedium": "Орташа",
   "fontSizeLarge": "Үлкен",
   "dataSync": "Деректерді синхрондау",
-  "enableDataSync": "Деректерді автоматты синхрондауды қосу",
+  "enableDataSync": "Деректерді синхрондауды қосу",
   "account": "Есептік жазба",
+  "logout": "Шығу",
   "logoutConfirmation": "Шығуға сенімдісіз бе?",
   "cancel": "Болдырмау",
-  "offlineMode": "Офлайн режимі: Кэштелген деректер қолданылуда",
-  "sync": "Синхрондау",
-  "offlineCannotSync": "Синхрондау мүмкін емес: Интернет жоқ",
-  "syncSuccessful": "Деректер сәтті синхрондалды",
-  "syncFailed": "Синхрондау сәтсіз: {error}",
-  "errorLoadingData": "Деректерді жүктеу қатесі: {error}",
-  "errorLoadingPdf": "PDF жүктеу сәтсіз: {error}",
-  "offlineCannotPlay": "Офлайн режимде аудио ойнату мүмкін емес",
-  "continueAsGuest": "Қонақ ретінде жалғастыру",
-  "guestAccessRestricted": "Бұл мүмкіндікті пайдалану үшін жүйеге кіріңіз"
+  "@pageXofY": {
+    "description": "Ағымдағы бетті және жалпы бет санын көрсетеді",
+    "placeholders": {
+      "currentPage": {
+        "type": "int"
+      },
+      "totalPages": {
+        "type": "int"
+      }
+    }
+  },
+  "@errorUpdatingFavorites": {
+    "description": "Таңдаулыларды жаңарту қатесінің хабарламасы",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "@syncFailed": {
+    "description": "Синхрондау қатесінің хабарламасы",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "@noBooksInCategory": {
+    "description": "Категорияда кітаптар жоқ екенін хабарлау",
+    "placeholders": {
+      "category": {
+        "type": "Object"
+      }
+    }
+  },
+  "@heyUser": {
+    "description": "Пайдаланушы атымен сәлемдесу",
+    "placeholders": {
+      "username": {
+        "type": "Object"
+      }
+    }
+  },
+  "@errorLoadingData": {
+    "description": "Деректерді жүктеу қатесінің хабарламасы",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "@errorLoadingPdf": {
+    "description": "PDF жүктеу қатесінің хабарламасы",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "read": "Оқу",
+  "@read": {
+    "description": "Жапсырма кітапты оқу түймесі үшін"
+  },
+  "errorSavingProgress": "Прогресті сақтау сәтсіз аяқталды: {error}",
+  "@errorSavingProgress": {
+    "description": "Прогресті сақтау қатесінің хабарламасы",
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  }
 }
