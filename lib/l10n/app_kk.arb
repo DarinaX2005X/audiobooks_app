@@ -170,5 +170,17 @@
         "type": "Object"
       }
     }
-  }
+  },
+  "registrationFailed": "Тіркелу қатесі. Қайталап көріңіз.",
+  "pinSetupTitle": "PIN-кодты орнату",
+  "pinEnterTitle": "PIN-кодты енгізіңіз",
+  "pinSetupMessage": "PIN-кодты ойлап табыңыз",
+  "pinEnterMessage": "PIN-кодты енгізіңіз",
+  "pinSetupDialogTitle": "PIN-кодты орнату керек пе?",
+  "pinSetupDialogMessage": "Офлайн режимге кіру үшін PIN-кодты орнатуды қалайсыз ба? Бұл интернетсіз қосылуға мүмкіндік береді.",
+  "pinSetupDialogLater": "Кейінірек",
+  "pinSetupDialogSet": "Орнату",
+  "pinErrorSetup": "PIN-кодты орнату кезінде қате",
+  "pinErrorInvalid": "Қате PIN-код",
+  "pinSuccess": "PIN-код сәтті орнатылды"
 }

@@ -44,24 +44,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
       try {
-        final result = await AuthService.register(
+        final success = await AuthService.register(
           _usernameController.text.trim(),
           _emailController.text.trim(),
           _passwordController.text,
         );
         
-        if (!mounted) return;
-        
-        if (result['success']) {
+        if (success) {
+          if (!mounted) return;
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const MainScreen()),
           );
         } else {
-          setState(() {
-            _errorMessage = result['message'];
-            _isLoading = false;
-          });
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(loc.registrationFailed),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
         }
       } on DioException catch (e) {
         if (!mounted) return;

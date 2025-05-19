@@ -170,5 +170,17 @@
         "type": "Object"
       }
     }
-  }
+  },
+  "registrationFailed": "Registration failed. Please try again.",
+  "pinSetupTitle": "Set PIN Code",
+  "pinEnterTitle": "Enter PIN Code",
+  "pinSetupMessage": "Create a PIN code",
+  "pinEnterMessage": "Enter your PIN code",
+  "pinSetupDialogTitle": "Set up PIN code?",
+  "pinSetupDialogMessage": "Would you like to set up a PIN code for offline access? This will allow you to log in without internet.",
+  "pinSetupDialogLater": "Later",
+  "pinSetupDialogSet": "Set up",
+  "pinErrorSetup": "Error setting up PIN code",
+  "pinErrorInvalid": "Invalid PIN code",
+  "pinSuccess": "PIN code set successfully"
 }

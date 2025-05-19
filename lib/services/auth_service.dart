@@ -4,50 +4,144 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import '../constants/api_constants.dart';
+import '../models/user.dart';
 
 class AuthService {
   static const String baseUrl = 'http://37.151.246.104:3000/api';
-  static final Dio _dio = Dio(BaseOptions(baseUrl: baseUrl));
+  static final Dio _dio = Dio(BaseOptions(
+    baseUrl: baseUrl,
+    validateStatus: (status) => status! < 500,
+  ));
   static final CookieJar _cookieJar = CookieJar();
-  static String? _token;
-  static String? _userId;
-  static const String _tokenKey = 'auth_token';
-  static const String _userIdKey = 'user_id';
+  static const String _loginKey = 'saved_login';
+  static const String _passwordKey = 'saved_password';
+  static const String _pinKey = 'secure_pin';
+  static const String _hasPinKey = 'has_pin_set';
+  static User? _currentUser;
 
-  static String? get token => _token;
-  static String? get userId => _userId;
+  static User? get currentUser => _currentUser;
 
   static Future<void> init() async {
+    debugPrint('🔄 AuthService: Initializing...');
     _dio.interceptors.add(CookieManager(_cookieJar));
     
-    // Load saved token and user ID
-    final prefs = await SharedPreferences.getInstance();
-    _token = prefs.getString(_tokenKey);
-    _userId = prefs.getString(_userIdKey);
-
-    // If we have a token, try to validate it with the server
-    if (_token != null) {
-      try {
-        final connectivityResult = await Connectivity().checkConnectivity();
-        if (connectivityResult != ConnectivityResult.none) {
-          // Try to validate token with server
-          final response = await _dio.get('/auth/me');
-          if (response.statusCode != 200) {
-            // Token is invalid, clear it
-            await _clearStoredCredentials();
-          }
-        }
-      } catch (e) {
-        print('⚠️ Token validation error: $e');
-        // Don't clear token on network error - we'll keep it for offline use
-      }
+    // Проверяем сохраненные учетные данные
+    final credentials = await getSavedCredentials();
+    if (credentials['login'] != null && credentials['password'] != null) {
+      debugPrint('🔄 AuthService: Found saved credentials, attempting auto-login');
+      await autoLogin();
+    } else {
+      debugPrint('🔄 AuthService: No saved credentials found');
     }
   }
 
-  static Future<bool> login(String email, String password, bool rememberMe) async {
+  static Future<bool> saveCredentials(String login, String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_loginKey, login);
+    await prefs.setString(_passwordKey, password);
+    debugPrint('🔑 Credentials saved for auto-login');
+    return true;
+  }
+
+  static Future<Map<String, String?>> getSavedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      'login': prefs.getString(_loginKey),
+      'password': prefs.getString(_passwordKey),
+    };
+  }
+
+  static Future<void> clearSavedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_loginKey);
+    await prefs.remove(_passwordKey);
+    debugPrint('🔑 Saved credentials cleared');
+  }
+
+  static Future<bool> autoLogin() async {
+    debugPrint('🔄 Attempting auto-login...');
+    final credentials = await getSavedCredentials();
+    final login = credentials['login'];
+    final password = credentials['password'];
+
+    if (login != null && password != null) {
+      debugPrint('🔄 Found saved credentials, attempting login...');
+      return await AuthService.login(login, password);
+    }
+    
+    debugPrint('🔄 No saved credentials found');
+    return false;
+  }
+
+  static Future<bool> setPinCode(String pin) async {
+    if (_currentUser == null) {
+      debugPrint('❌ Cannot set PIN: User not authenticated');
+      return false;
+    }
+
     try {
-      print('🔑 Attempting login with email: $email'); // Debug log
+      final prefs = await SharedPreferences.getInstance();
+      // В реальном приложении здесь нужно использовать шифрование
+      await prefs.setString(_pinKey, pin);
+      await prefs.setBool(_hasPinKey, true);
+      debugPrint('🔐 PIN code set successfully');
+      return true;
+    } catch (e) {
+      debugPrint('❌ Error setting PIN code: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> verifyPinCode(String pin) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedPin = prefs.getString(_pinKey);
       
+      if (savedPin == null) {
+        debugPrint('❌ No PIN code found');
+        return false;
+      }
+
+      final isValid = savedPin == pin;
+      if (isValid) {
+        debugPrint('🔐 PIN verification successful');
+        // Восстанавливаем последнего пользователя для офлайн режима
+        final lastUserData = prefs.getString('last_user_data');
+        if (lastUserData != null) {
+          _currentUser = User.fromJson(json.decode(lastUserData));
+        }
+      } else {
+        debugPrint('❌ Invalid PIN code');
+      }
+      return isValid;
+    } catch (e) {
+      debugPrint('❌ Error verifying PIN code: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> hasPinSet() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_hasPinKey) ?? false;
+  }
+
+  static Future<void> removePinCode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_pinKey);
+      await prefs.remove(_hasPinKey);
+      debugPrint('🔐 PIN code removed');
+    } catch (e) {
+      debugPrint('❌ Error removing PIN code: $e');
+    }
+  }
+
+  static Future<bool> login(String email, String password, {bool rememberMe = false}) async {
+    try {
+      debugPrint('🔑 Attempting login with email: $email');
       final response = await _dio.post(
         '/auth/login',
         data: {
@@ -56,132 +150,79 @@ class AuthService {
         },
       );
 
-      print('🔑 Login response status: ${response.statusCode}'); // Debug log
-      print('🔑 Login response data: ${response.data}'); // Debug log
+      debugPrint('🔑 Login response status: ${response.statusCode}');
+      debugPrint('🔑 Login response data: ${response.data}');
 
       if (response.statusCode == 200) {
-        final data = response.data;
-        
-        if (data is Map<String, dynamic>) {
-          // Get user data from the response
-          final userData = data['rest'] as Map<String, dynamic>;
-          final userId = userData['id'];
-          final sessionId = data['sessionId'];
+        try {
+          final data = response.data;
+          _currentUser = User.fromJson(data['rest']);
           
-          if (userId == null || sessionId == null) {
-            print('⚠️ Login error: Missing userId or sessionId');
-            return false;
+          // Сохраняем данные пользователя для офлайн режима
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('last_user_data', json.encode(data['rest']));
+          
+          // Если rememberMe включен, сохраняем учетные данные
+          if (rememberMe) {
+            await saveCredentials(email, password);
           }
 
-          _userId = userId;
-          _token = sessionId; // Use sessionId as token
-          
-          // Save credentials if remember me is enabled
-          if (rememberMe) {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString(_tokenKey, sessionId);
-            await prefs.setString(_userIdKey, userId);
-          }
-          
+          debugPrint('🔑 Login successful');
           return true;
-        } else {
-          print('⚠️ Login error: Response data is not a Map');
+        } catch (e) {
+          debugPrint('❌ Error processing login response: $e');
           return false;
         }
       }
-      
-      print('⚠️ Login error: Status code ${response.statusCode}');
+      debugPrint('❌ Login failed with status code: ${response.statusCode}');
       return false;
-    } on DioException catch (e) {
-      print('⚠️ Login error (DioException): ${e.message}');
-      print('⚠️ Response data: ${e.response?.data}');
-      rethrow;
     } catch (e) {
-      print('⚠️ Login error: $e');
-      rethrow;
+      debugPrint('❌ Error during login: $e');
+      return false;
     }
   }
 
-  static Future<bool> validateOfflineAccess() async {
-    final prefs = await SharedPreferences.getInstance();
-    _token = prefs.getString(_tokenKey);
-    _userId = prefs.getString(_userIdKey);
-    
-    return _token != null && _userId != null;
-  }
-
-  static Future<Map<String, dynamic>> register(
-    String username,
-    String email,
-    String password,
-  ) async {
+  static Future<bool> register(String username, String email, String password) async {
     try {
-      final response = await _dio.post(
-        '/auth/register',
-        data: {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
           'username': username,
           'email': email,
           'password': password,
-        },
+        }),
       );
 
-      return {
-        'success': response.statusCode == 200 || response.statusCode == 201,
-        'message': response.data['message'] ?? 'Registration complete',
-      };
-    } catch (e) {
-      print('⚠️ Registration error: $e');
-      return {'success': false, 'message': 'Something went wrong.'};
-    }
-  }
-
-  static Future<void> _clearStoredCredentials() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_tokenKey);
-    await prefs.remove(_userIdKey);
-    _token = null;
-    _userId = null;
-  }
-
-  static Future<bool> logout() async {
-    try {
-      final connectivityResult = await Connectivity().checkConnectivity();
-      if (connectivityResult != ConnectivityResult.none) {
-        await _dio.post('/auth/logout');
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        _currentUser = User.fromJson(data['rest']);
+        return true;
       }
-      
-      await _clearStoredCredentials();
-      await _cookieJar.deleteAll();
-      return true;
+      return false;
     } catch (e) {
-      print('⚠️ Logout error: $e');
+      debugPrint('Error during registration: $e');
       return false;
     }
   }
 
+  static Future<void> logout() async {
+    debugPrint('🔑 Logging out...');
+    _currentUser = null;
+    await clearSavedCredentials();
+    await removePinCode(); // Удаляем PIN при выходе
+    debugPrint('🔑 Logout completed, all credentials cleared');
+  }
+
   static Future<bool> isLoggedIn() async {
-    if (_token != null && _userId != null) {
-      return true;
-    }
-    
-    // Try to load from storage
-    final prefs = await SharedPreferences.getInstance();
-    _token = prefs.getString(_tokenKey);
-    _userId = prefs.getString(_userIdKey);
-    
-    return _token != null && _userId != null;
+    return _currentUser != null;
   }
 
   static Future<Response> fetchWithAuth(String endpoint) async {
-    if (_token == null) {
+    if (_currentUser == null) {
       throw Exception('Not authenticated');
     }
-    return await _dio.get(
-      endpoint,
-      options: Options(
-        headers: {'Authorization': 'Bearer $_token'},
-      ),
-    );
+    return await _dio.get(endpoint);
   }
 
   static Future<void> setGuestMode(bool isGuest) async {

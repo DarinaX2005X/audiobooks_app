@@ -184,5 +184,16 @@
         "type": "Object"
       }
     }
-  }
+  },
+  "pinSetupTitle": "Установка PIN-кода",
+  "pinEnterTitle": "Введите PIN-код",
+  "pinSetupMessage": "Придумайте PIN-код",
+  "pinEnterMessage": "Введите ваш PIN-код",
+  "pinSetupDialogTitle": "Установить PIN-код?",
+  "pinSetupDialogMessage": "Хотите установить PIN-код для входа в офлайн режиме? Это позволит вам входить в приложение без интернета.",
+  "pinSetupDialogLater": "Позже",
+  "pinSetupDialogSet": "Установить",
+  "pinErrorSetup": "Ошибка при установке PIN-кода",
+  "pinErrorInvalid": "Неверный PIN-код",
+  "pinSuccess": "PIN-код успешно установлен"
 }

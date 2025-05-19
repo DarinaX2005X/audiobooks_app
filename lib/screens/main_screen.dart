@@ -38,6 +38,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    selectedCategory = Category(name: 'All'); // Initialize with 'All' category
     _loadBooks();
     _loadCategories();
     _loadUserData();
@@ -95,7 +96,7 @@ class _MainScreenState extends State<MainScreen> {
             books
               ..clear()
               ..addAll(serverBooks);
-            selectedCategory = loadedCategories.isNotEmpty ? loadedCategories.first : null;
+            selectedCategory = categories.first; // Always select 'All' category first
           });
         } catch (e) {
           print('⚠️ Error loading from server: $e');
@@ -114,7 +115,7 @@ class _MainScreenState extends State<MainScreen> {
           categories
             ..clear()
             ..addAll([Category(name: 'All'), ...localCategories]);
-          selectedCategory = localCategories.isNotEmpty ? localCategories.first : null;
+          selectedCategory = categories.first; // Always select 'All' category first
         });
       }
     } catch (e) {
@@ -218,7 +219,7 @@ class _MainScreenState extends State<MainScreen> {
 
     Map<String, List<Book>> booksByGenre = {};
     for (var book in books) {
-      if (selectedCategory?.name == 'All' || book.genre == selectedCategory!.name) {
+      if (selectedCategory == null || selectedCategory?.name == 'All' || book.genre == selectedCategory!.name) {
         final genre = book.genre.isNotEmpty ? book.genre : 'Uncategorized';
         booksByGenre.putIfAbsent(genre, () => []).add(book);
       }

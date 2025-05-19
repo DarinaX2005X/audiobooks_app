@@ -7,9 +7,10 @@ import 'main_screen.dart';
 import 'register_screen.dart';
 import 'forget_password_screen.dart';
 import 'package:dio/dio.dart';
+import 'pin_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -43,19 +44,10 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
-    final loc = AppLocalizations.of(context);
-
-    if (_emailController.text.trim().isEmpty) {
+  Future<void> _login() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       setState(() {
-        _errorMessage = loc.emailRequired;
-      });
-      return;
-    }
-
-    if (_passwordController.text.isEmpty) {
-      setState(() {
-        _errorMessage = loc.passwordRequired;
+        _errorMessage = 'Please fill in all fields';
       });
       return;
     }
@@ -66,68 +58,36 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
+      debugPrint('🔑 LoginScreen: Attempting login with remember me: $_isRemembered');
       final success = await AuthService.login(
-        _emailController.text.trim(),
+        _emailController.text,
         _passwordController.text,
-        _isRemembered,
+        rememberMe: _isRemembered,
       );
 
       if (!mounted) return;
 
       if (success) {
-        if (!_isRemembered) {
-          // Handle non-remembered login case
-        }
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-        );
+        debugPrint('🔑 LoginScreen: Login successful, navigating to main screen');
+        _handleLoginSuccess();
       } else {
+        debugPrint('🔑 LoginScreen: Login failed');
         setState(() {
-          _errorMessage = loc.invalidCredentials;
+          _errorMessage = 'Invalid email or password';
+        });
+      }
+    } catch (e) {
+      debugPrint('🔑 LoginScreen: Error during login: $e');
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'An error occurred. Please try again.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
           _isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(loc.invalidCredentials),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
       }
-    } on DioException catch (e) {
-      if (!mounted) return;
-      String errorMessage = loc.errorOccurred;
-      
-      if (e.response?.data != null && e.response?.data is Map) {
-        final data = e.response?.data as Map;
-        if (data.containsKey('message')) {
-          errorMessage = data['message'].toString();
-        }
-      }
-      
-      setState(() {
-        _errorMessage = errorMessage;
-        _isLoading = false;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMessage),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _errorMessage = loc.errorOccurred;
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(loc.errorOccurred),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
     }
   }
 
@@ -138,6 +98,61 @@ class _LoginScreenState extends State<LoginScreen> {
       context,
       MaterialPageRoute(builder: (context) => const MainScreen()),
     );
+  }
+
+  void _handleLoginSuccess() async {
+    if (mounted) {
+      // Проверяем, установлен ли уже PIN-код
+      final hasPin = await AuthService.hasPinSet();
+      
+      if (!hasPin) {
+        // Показываем диалог с предложением установить PIN-код
+        final shouldSetPin = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(AppLocalizations.of(context).pinSetupDialogTitle),
+            content: Text(AppLocalizations.of(context).pinSetupDialogMessage),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(AppLocalizations.of(context).pinSetupDialogLater),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(AppLocalizations.of(context).pinSetupDialogSet),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldSetPin == true) {
+          if (mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PinScreen(
+                  isSetup: true,
+                  onSuccess: () {
+                    Navigator.pop(context); // Закрываем экран PIN-кода
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MainScreen()),
+                    );
+                  },
+                ),
+              ),
+            );
+            return;
+          }
+        }
+      }
+
+      // Если PIN не нужен или уже установлен, переходим на главный экран
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+      );
+    }
   }
 
   @override
@@ -245,7 +260,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       style: TextStyle(color: theme.colorScheme.onSurface),
-                      onSubmitted: (_) => _handleLogin(),
+                      onSubmitted: (_) => _login(),
                     ),
                     const SizedBox(height: 10),
                     Row(
@@ -279,7 +294,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: MediaQuery.of(context).size.width * 0.9, // 90% of screen width
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: isOffline || _isLoading ? null : _handleLogin,
+                        onPressed: isOffline || _isLoading ? null : _login,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: theme.colorScheme.primary,
                           foregroundColor: theme.colorScheme.onPrimary,
