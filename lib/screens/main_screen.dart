@@ -726,11 +726,18 @@ class _MainScreenState extends State<MainScreen> {
       if (loadedCategories.isNotEmpty && mounted) {
         setState(() {
           categories = [Category(name: 'All'), ...loadedCategories];
-          selectedCategory = categories.first;
+          selectedCategory = categories.firstWhere((cat) => cat.name == 'All');
         });
       }
     } catch (e) {
       debugPrint('Error loading categories: $e');
+      // Set default category to 'All' even if loading fails
+      if (mounted) {
+        setState(() {
+          categories = [Category(name: 'All')];
+          selectedCategory = categories.first;
+        });
+      }
     }
   }
 

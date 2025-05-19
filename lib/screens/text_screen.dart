@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:provider/provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import '../models/book.dart';
 import '../constants/theme_constants.dart';
 import '../l10n/app_localizations.dart';
@@ -57,8 +60,29 @@ class _TextScreenState extends State<TextScreen> {
     }
   }
 
+  Future<void> _loadAssetPdf() async {
+    final bytes = await rootBundle.load('pdfs/test.pdf');
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/test.pdf');
+    await file.writeAsBytes(bytes.buffer.asUint8List());
+    localPath = file.path;
+  }
+
+  Future<void> _downloadPdfFromUrl(String url) async {
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/${widget.book.fileName}');
+      await file.writeAsBytes(response.bodyBytes);
+      localPath = file.path;
+    } else {
+      throw Exception('Не удалось загрузить PDF с $url');
+    }
+  }
+
   Future<void> _loadPdf() async {
     try {
+      // First try to get from cache
       localPath = await LocalStorageService.getCachedPdfPath(widget.book.title);
       if (localPath != null && File(localPath!).existsSync()) {
         setState(() {
@@ -67,20 +91,24 @@ class _TextScreenState extends State<TextScreen> {
         return;
       }
 
+      // If offline and no cache, show error
       if (isOffline) {
         throw Exception('No cached PDF available in offline mode');
       }
 
+      // Try to get PDF URL
       final pdfUrl = widget.book.pdfUrl?.trim();
       if (pdfUrl == null || pdfUrl.isEmpty) {
-        throw Exception('No PDF URL provided for this book');
+        // Use test.pdf as fallback
+        await _loadAssetPdf();
+        setState(() {
+          isLoading = false;
+        });
+        return;
       }
 
-      localPath = await LocalStorageService.cachePdf(pdfUrl, widget.book.title);
-      if (localPath == null) {
-        throw Exception('Failed to download PDF from $pdfUrl');
-      }
-
+      // Try to download the PDF
+      await _downloadPdfFromUrl(pdfUrl);
       setState(() {
         isLoading = false;
       });
@@ -125,17 +153,26 @@ class _TextScreenState extends State<TextScreen> {
       // Try server progress
       try {
         final userProfile = await ApiService.getUserProfile();
-        final serverProgress = userProfile['progress'] as Map<String, int>?;
-        final page = serverProgress != null && serverProgress.containsKey(widget.book.id)
-            ? serverProgress[widget.book.id] ?? 1
-            : 1;
-        final updatedBook = widget.book.copyWith(progressPage: page);
-        await LocalStorageService.updateBook(updatedBook);
-        await LocalStorageService.saveProgress({widget.book.id: page});
-        setState(() {
-          currentPage = page;
-          hasProgress = true;
-        });
+        final serverProgress = userProfile['progress'] as List<dynamic>?;
+        if (serverProgress != null) {
+          final bookProgress = serverProgress.firstWhere(
+            (p) => p['audiobookId'] == widget.book.id,
+            orElse: () => {'positionSec': 1},
+          );
+          final page = bookProgress['positionSec'] as int? ?? 1;
+          final updatedBook = widget.book.copyWith(progressPage: page);
+          await LocalStorageService.updateBook(updatedBook);
+          await LocalStorageService.saveProgress({widget.book.id: page});
+          setState(() {
+            currentPage = page;
+            hasProgress = true;
+          });
+        } else {
+          setState(() {
+            currentPage = 1;
+            hasProgress = true;
+          });
+        }
       } catch (e) {
         print('⚠️ Error fetching server progress: $e');
         setState(() {
