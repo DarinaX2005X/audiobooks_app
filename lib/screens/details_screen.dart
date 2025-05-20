@@ -467,6 +467,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                       }
                                       _togglePlay();
                                     },
+
                                     child: Container(
                                       width: 53,
                                       height: 53,
@@ -474,7 +475,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                         color: AppColors.buttonRed,
                                         shape: OvalBorder(),
                                       ),
-                                      color: Colors.white,
                                       child: IconButton(
                                         icon: Icon(
                                           _isPlaying
