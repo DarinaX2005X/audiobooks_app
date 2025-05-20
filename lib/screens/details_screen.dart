@@ -474,11 +474,23 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                         color: AppColors.buttonRed,
                                         shape: OvalBorder(),
                                       ),
-                                      child: Icon(
-                                        _isPlaying
-                                            ? Icons.pause
-                                            : Icons.play_arrow,
-                                        color: Colors.white,
+                                      color: Colors.white,
+                                      child: IconButton(
+                                        icon: Icon(
+                                          _isPlaying
+                                              ? Icons.pause
+                                              : Icons.play_arrow,
+                                        ),
+                                        onPressed: () async {
+                                          if (_isPlaying) {
+                                            await _audioPlayer.pause();
+                                          } else {
+                                            await _audioPlayer.play();
+                                          }
+                                          setState(() {
+                                            _isPlaying = !_isPlaying;
+                                          });
+                                        },
                                       ),
                                     ),
                                   ),
