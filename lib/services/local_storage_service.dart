@@ -41,6 +41,7 @@ class LocalStorageService {
   static const String categoriesBox = 'categories';
   static const String pdfsBox = 'pdfs';
   static const String userBox = 'user';
+  static const String recentBooksBox = 'recent_books';
 
   static Future<Box<Book>> _getBooksBox() async {
     return await Hive.openBox<Book>(booksBox);
@@ -48,6 +49,56 @@ class LocalStorageService {
 
   static Future<Box> _getUserBox() async {
     return await Hive.openBox(userBox);
+  }
+
+  static Future<Box<String>> _getRecentBooksBox() async {
+    return await Hive.openBox<String>(recentBooksBox);
+  }
+
+  static Future<void> addRecentBook(String bookId) async {
+    try {
+      final box = await _getRecentBooksBox();
+      final recentBooks = box.values.toList();
+      
+      // Remove if already exists to avoid duplicates
+      recentBooks.remove(bookId);
+      
+      // Add to the beginning of the list
+      recentBooks.insert(0, bookId);
+      
+      // Keep only the last 10 books
+      if (recentBooks.length > 10) {
+        recentBooks.removeLast();
+      }
+      
+      // Save the updated list
+      await box.clear();
+      await box.addAll(recentBooks);
+    } catch (e) {
+      print('Error adding recent book: $e');
+    }
+  }
+
+  static Future<List<Book>> getRecentBooks() async {
+    try {
+      final recentBooksBox = await _getRecentBooksBox();
+      final bookIds = recentBooksBox.values.toList();
+      
+      if (bookIds.isEmpty) return [];
+      
+      final booksBox = await _getBooksBox();
+      final books = booksBox.values.toList();
+      
+      // Filter books that exist in our database
+      return bookIds
+          .map((id) => books.firstWhereOrNull((book) => book.id == id))
+          .where((book) => book != null)
+          .cast<Book>()
+          .toList();
+    } catch (e) {
+      print('Error getting recent books: $e');
+      return [];
+    }
   }
 
   static Future<void> saveBooks(List<Book> books) async {

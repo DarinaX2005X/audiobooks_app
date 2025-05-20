@@ -182,5 +182,6 @@
   "pinSetupDialogSet": "Set up",
   "pinErrorSetup": "Error setting up PIN code",
   "pinErrorInvalid": "Invalid PIN code",
-  "pinSuccess": "PIN code set successfully"
+  "pinSuccess": "PIN code set successfully",
+  "recentlyOpened": "Recently Opened"
 }

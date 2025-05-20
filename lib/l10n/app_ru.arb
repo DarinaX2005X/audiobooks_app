@@ -195,5 +195,6 @@
   "pinSetupDialogSet": "Установить",
   "pinErrorSetup": "Ошибка при установке PIN-кода",
   "pinErrorInvalid": "Неверный PIN-код",
-  "pinSuccess": "PIN-код успешно установлен"
+  "pinSuccess": "PIN-код успешно установлен",
+  "recentlyOpened": "Недавно открытые"
 }

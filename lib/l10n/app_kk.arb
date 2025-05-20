@@ -182,5 +182,6 @@
   "pinSetupDialogSet": "Орнату",
   "pinErrorSetup": "PIN-кодты орнату кезінде қате",
   "pinErrorInvalid": "Қате PIN-код",
-  "pinSuccess": "PIN-код сәтті орнатылды"
+  "pinSuccess": "PIN-код сәтті орнатылды",
+  "recentlyOpened": "Жақында ашылған"
 }

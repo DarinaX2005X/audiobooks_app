@@ -22,12 +22,15 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<Book> _allBooks = [];
   List<Book> _filteredResults = [];
+  List<Book> _recentBooks = [];
+  List<String> _availableGenres = [];
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_filterResults);
     _loadBooks();
+    _loadRecentBooks();
   }
 
   @override
@@ -49,35 +52,47 @@ class _SearchScreenState extends State<SearchScreen> {
         setState(() {
           _allBooks = localBooks;
           _filteredResults = localBooks;
+          _availableGenres = localBooks.map((b) => b.genre).toSet().toList();
         });
       }
 
       // Then try to sync with server
-      final serverBooks = await ApiService.getBooks();
+      try {
+        final serverBooks = await ApiService.getBooks();
 
-      if (serverBooks.isNotEmpty && mounted) {
-        // Create a map of local books by ID for faster lookup
-        final localBooksMap = {for (var book in localBooks) book.id: book};
+        if (serverBooks.isNotEmpty && mounted) {
+          // Create a map of local books by ID for faster lookup
+          final localBooksMap = {for (var book in localBooks) book.id: book};
 
-        // Merge server books with local books, preserving local favorites
-        final mergedBooks =
-            serverBooks.map((serverBook) {
-              final localBook = localBooksMap[serverBook.id];
-              return localBook != null
-                  ? serverBook.copyWith(isFavorite: localBook.isFavorite)
-                  : serverBook;
-            }).toList();
+          // Merge server books with local books, preserving local favorites
+          final mergedBooks =
+              serverBooks.map((serverBook) {
+                final localBook = localBooksMap[serverBook.id];
+                return localBook != null
+                    ? serverBook.copyWith(isFavorite: localBook.isFavorite)
+                    : serverBook;
+              }).toList();
 
-        setState(() {
-          _allBooks = mergedBooks;
-          _filterResults(); // Apply any existing search filter
-        });
+          setState(() {
+            _allBooks = mergedBooks;
+            _filterResults(); // Apply any existing search filter
+            _availableGenres = mergedBooks.map((b) => b.genre).toSet().toList();
+          });
+        }
+      } catch (e) {
+        debugPrint('Error syncing with server: $e');
+        // Don't show error if we have local books
+        if (localBooks.isEmpty && mounted) {
+          setState(() {
+            _errorMessage = 'You are offline. Search is available for downloaded books only.';
+          });
+        }
       }
     } catch (e) {
       debugPrint('Error loading books: $e');
       if (mounted) {
         setState(() {
-          _errorMessage = 'Failed to load books. Please check your connection.';
+          _errorMessage = 'Error loading books. Please try again.';
         });
       }
     } finally {
@@ -89,12 +104,25 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
+  Future<void> _loadRecentBooks() async {
+    try {
+      final recentBooks = await LocalStorageService.getRecentBooks();
+      if (mounted) {
+        setState(() {
+          _recentBooks = recentBooks;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading recent books: $e');
+    }
+  }
+
   void _filterResults() {
     final query = _searchController.text.toLowerCase();
     setState(() {
       isSearching = query.isNotEmpty;
       if (query.isEmpty) {
-        _filteredResults = _allBooks;
+        _filteredResults = [];
       } else {
         _filteredResults =
             _allBooks.where((book) {
@@ -270,7 +298,8 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
 
-            const SizedBox(height: 20), // Search results or initial content
+            const SizedBox(height: 20),
+
             if (_errorMessage != null)
               Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -306,88 +335,72 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
 
             Expanded(
-              child:
-                  _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (_errorMessage != null)
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (!isSearching) ...[
+                              if (_availableGenres.isNotEmpty) ...[
+                                Text(
+                                  loc.recommendedGenres,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontFamily: AppTextStyles.albraGroteskFontFamily,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                _buildGenreRow(_availableGenres),
+                                const SizedBox(height: 24),
+                              ],
+                              
+                              if (_recentBooks.isNotEmpty) ...[
+                                Text(
+                                  loc.recentlyOpened,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontFamily: AppTextStyles.albraGroteskFontFamily,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                ..._recentBooks.map((book) => _buildBookRow(book)).toList(),
+                                const SizedBox(height: 24),
+                              ],
+                            ],
+                            
+                            if (isSearching) ...[
+                              Text(
+                                loc.searchResults,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontFamily: AppTextStyles.albraGroteskFontFamily,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              if (_filteredResults.isEmpty)
                                 Center(
                                   child: Padding(
                                     padding: const EdgeInsets.all(32.0),
                                     child: Text(
-                                      _errorMessage!,
-                                      style: theme.textTheme.bodyLarge
-                                          ?.copyWith(
-                                            fontFamily:
-                                                AppTextStyles
-                                                    .albraGroteskFontFamily,
-                                            fontWeight: FontWeight.w400,
-                                            color: theme.colorScheme.error,
-                                          ),
+                                      loc.noResultsFound,
+                                      style: theme.textTheme.bodyLarge?.copyWith(
+                                        fontFamily: AppTextStyles.albraGroteskFontFamily,
+                                        fontWeight: FontWeight.w400,
+                                      ),
                                       textAlign: TextAlign.center,
                                     ),
                                   ),
                                 )
-                              else if (!isSearching) ...[
-                                Text(
-                                  loc.recommendedGenres,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontFamily:
-                                        AppTextStyles.albraGroteskFontFamily,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                _buildGenreRow([
-                                  loc.genreFantasy,
-                                  loc.genreDrama,
-                                ]),
-                                const SizedBox(height: 15),
-                                _buildGenreRow([
-                                  loc.genreFiction,
-                                  loc.genreDetective,
-                                ]),
-                              ] else ...[
-                                Text(
-                                  loc.searchResults,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontFamily:
-                                        AppTextStyles.albraGroteskFontFamily,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                if (_filteredResults.isEmpty)
-                                  Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(32.0),
-                                      child: Text(
-                                        loc.noResultsFound,
-                                        style: theme.textTheme.bodyLarge
-                                            ?.copyWith(
-                                              fontFamily:
-                                                  AppTextStyles
-                                                      .albraGroteskFontFamily,
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  )
-                                else
-                                  ..._filteredResults
-                                      .map((book) => _buildBookRow(book))
-                                      .toList(),
-                              ],
+                              else
+                                ..._filteredResults.map((book) => _buildBookRow(book)).toList(),
                             ],
-                          ),
+                          ],
                         ),
                       ),
+                    ),
             ),
           ],
         ),
@@ -436,7 +449,13 @@ class _SearchScreenState extends State<SearchScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: GestureDetector(
-        onTap: () {
+        onTap: () async {
+          // Add to recent books when opened
+          await LocalStorageService.addRecentBook(book.id);
+          if (mounted) {
+            await _loadRecentBooks(); // Reload recent books
+          }
+          
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => DetailsScreen(book: book)),
