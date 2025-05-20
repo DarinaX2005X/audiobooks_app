@@ -257,27 +257,41 @@ class AuthService {
     if (password != null) updateData['password'] = password;
 
     try {
-      final response = await _dio.put('/auth/update', data: updateData);
+      final response = await _dio.patch('/auth/update', data: updateData);
 
       debugPrint(
         '📝 Update user response: ${response.statusCode} ${response.data}',
       );
 
       if (response.statusCode == 200) {
-        _currentUser = User.fromJson(response.data['rest']);
+        // Update current user with new data
+        if (response.data is Map) {
+          final userData = response.data;
+          if (userData['user'] != null) {
+            _currentUser = User.fromJson(userData['user']);
+          } else if (userData['rest'] != null) {
+            _currentUser = User.fromJson(userData['rest']);
+          } else {
+            // If no user data in response, update only the fields we changed
+            _currentUser = _currentUser!.copyWith(
+              email: email,
+              username: username,
+            );
+          }
 
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(
-          'last_user_data',
-          json.encode(response.data['rest']),
-        );
+          // Save updated user data
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(
+            'last_user_data',
+            json.encode(_currentUser!.toJson()),
+          );
 
-        debugPrint('✅ User info updated successfully');
-        return true;
-      } else {
-        debugPrint('❌ Failed to update user info: ${response.statusCode}');
-        return false;
+          debugPrint('✅ User info updated successfully');
+          return true;
+        }
       }
+      debugPrint('❌ Failed to update user info: ${response.statusCode}');
+      return false;
     } catch (e) {
       debugPrint('❌ Exception while updating user: $e');
       return false;

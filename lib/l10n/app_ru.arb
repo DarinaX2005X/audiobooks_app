@@ -196,5 +196,11 @@
   "pinErrorSetup": "Ошибка при установке PIN-кода",
   "pinErrorInvalid": "Неверный PIN-код",
   "pinSuccess": "PIN-код успешно установлен",
-  "recentlyOpened": "Недавно открытые"
+  "recentlyOpened": "Недавно открытые",
+  "editProfile": "Редактировать профиль",
+  "newPassword": "Новый пароль",
+  "save": "Сохранить",
+  "fillRequiredFields": "Пожалуйста, заполните все обязательные поля",
+  "profileUpdated": "Профиль успешно обновлен",
+  "errorUpdatingProfile": "Не удалось обновить профиль"
 }

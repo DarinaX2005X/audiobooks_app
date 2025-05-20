@@ -183,5 +183,11 @@
   "pinErrorSetup": "Error setting up PIN code",
   "pinErrorInvalid": "Invalid PIN code",
   "pinSuccess": "PIN code set successfully",
-  "recentlyOpened": "Recently Opened"
+  "recentlyOpened": "Recently Opened",
+  "editProfile": "Edit Profile",
+  "newPassword": "New Password",
+  "save": "Save",
+  "fillRequiredFields": "Please fill in all required fields",
+  "profileUpdated": "Profile updated successfully",
+  "errorUpdatingProfile": "Failed to update profile"
 }

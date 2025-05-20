@@ -395,7 +395,7 @@ class _MainScreenState extends State<MainScreen> {
                                   const SizedBox(width: 12),
                                   Flexible(
                                     child: Text(
-                                      loc.heyUser('John'),
+                                      loc.heyUser(_userName),
                                       style: theme.textTheme.headlineSmall?.copyWith(
                                         fontFamily: AppTextStyles.albraFontFamily,
                                         fontWeight: FontWeight.w500,
@@ -755,11 +755,18 @@ class _MainScreenState extends State<MainScreen> {
 
   Future<void> _loadUserData() async {
     try {
-      final result = await UserService.fetchUserProfile();
-      if (result['success'] && mounted) {
+      final currentUser = AuthService.currentUser;
+      if (currentUser != null && mounted) {
         setState(() {
-          _userName = result['user']['name'] ?? '';
+          _userName = currentUser.username;
         });
+      } else {
+        final result = await UserService.fetchUserProfile();
+        if (result['success'] && mounted) {
+          setState(() {
+            _userName = result['user']['username'] ?? '';
+          });
+        }
       }
     } catch (e) {
       debugPrint('Error loading user data: $e');

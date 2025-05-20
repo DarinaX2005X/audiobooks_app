@@ -183,5 +183,11 @@
   "pinErrorSetup": "PIN-кодты орнату кезінде қате",
   "pinErrorInvalid": "Қате PIN-код",
   "pinSuccess": "PIN-код сәтті орнатылды",
-  "recentlyOpened": "Жақында ашылған"
+  "recentlyOpened": "Жақында ашылған",
+  "editProfile": "Профильді өңдеу",
+  "newPassword": "Жаңа құпия сөз",
+  "save": "Сақтау",
+  "fillRequiredFields": "Барлық міндетті өрістерді толтырыңыз",
+  "profileUpdated": "Профиль сәтті жаңартылды",
+  "errorUpdatingProfile": "Профильді жаңарту сәтсіз аяқталды"
 }

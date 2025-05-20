@@ -221,7 +221,7 @@ class ApiService {
               },
             );
             
-            if (response.statusCode == 200) {
+            if (response.statusCode == 200 || response.statusCode == 201) {
               print('✅ Progress updated for book $bookId');
               success = true;
             } else {

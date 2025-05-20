@@ -7,6 +7,7 @@ import '../services/user_service.dart';
 import '../services/auth_service.dart';
 import '../services/local_storage_service.dart';
 import 'settings_screen.dart';
+import 'main_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final VoidCallback? onBack;
@@ -257,7 +258,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    _userData?['name'] ?? 'User Name',
+                    _userData?['username'] ?? 'User Name',
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontFamily: AppTextStyles.albraFontFamily,
                     ),
@@ -267,6 +268,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _userData?['email'] ?? 'email@example.com',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onBackground.withOpacity(0.6),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton.icon(
+                    onPressed: () => _showEditProfileDialog(),
+                    icon: Icon(Icons.edit, size: 18, color: theme.colorScheme.primary),
+                    label: Text(
+                      loc.editProfile,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.primary,
+                      ),
                     ),
                   ),
                 ],
@@ -434,5 +446,114 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
     }
+  }
+
+  Future<void> _showEditProfileDialog() async {
+    final theme = Theme.of(context);
+    final loc = AppLocalizations.of(context);
+    final TextEditingController usernameController = TextEditingController(text: _userData?['username']);
+    final TextEditingController emailController = TextEditingController(text: _userData?['email']);
+    final TextEditingController passwordController = TextEditingController();
+
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(loc.editProfile),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: usernameController,
+                decoration: InputDecoration(
+                  labelText: loc.username,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(
+                  labelText: loc.email,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: passwordController,
+                decoration: InputDecoration(
+                  labelText: loc.newPassword,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                obscureText: true,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(loc.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final username = usernameController.text.trim();
+              final email = emailController.text.trim();
+              final password = passwordController.text.trim();
+
+              if (username.isEmpty || email.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(loc.fillRequiredFields)),
+                );
+                return;
+              }
+
+              try {
+                final success = await AuthService.updateUserInfo(
+                  username: username,
+                  email: email,
+                  password: password.isNotEmpty ? password : null,
+                );
+
+                if (success) {
+                  if (mounted) {
+                    Navigator.pop(context);
+                    _loadUserData();
+                    if (context.mounted) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const MainScreen()),
+                      );
+                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(loc.profileUpdated)),
+                    );
+                  }
+                } else {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(loc.errorUpdatingProfile)),
+                    );
+                  }
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(e.toString())),
+                  );
+                }
+              }
+            },
+            child: Text(loc.save),
+          ),
+        ],
+      ),
+    );
   }
 }

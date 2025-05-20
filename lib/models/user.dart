@@ -48,6 +48,26 @@ class User {
       if (progress != null) 'progress': progress!.map((e) => e.toJson()).toList(),
     };
   }
+
+  User copyWith({
+    String? id,
+    String? email,
+    String? username,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    List<Favorite>? favorites,
+    List<Progress>? progress,
+  }) {
+    return User(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      username: username ?? this.username,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      favorites: favorites ?? this.favorites,
+      progress: progress ?? this.progress,
+    );
+  }
 }
 
 class Favorite {
