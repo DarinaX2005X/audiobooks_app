@@ -67,7 +67,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
       await _audioPlayer.setUrl(
         AuthService.baseUrl + '/stream/' + book!.fileName!,
       );
-      await _audioPlayer.play();
       if (book != null) {
         setState(() {
           _book = book;
