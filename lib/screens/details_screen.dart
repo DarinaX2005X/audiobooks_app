@@ -23,6 +23,7 @@ class DetailsScreen extends StatefulWidget {
 class _DetailsScreenState extends State<DetailsScreen> {
   final _audioPlayer = AudioPlayer();
   double _progressValue = 0.0;
+  Duration _totalDuration = Duration.zero;
   bool isOffline = false;
   bool _isFavorite = false;
   bool _isLoading = false;
@@ -34,6 +35,14 @@ class _DetailsScreenState extends State<DetailsScreen> {
     _checkConnectivity();
     _loadUserProfile();
     _loadBookDetails();
+    _audioPlayer.positionStream.listen((position) {
+      final duration = _audioPlayer.duration;
+      if (duration != null && duration.inMilliseconds > 0) {
+        setState(() {
+          _progressValue = position.inMilliseconds / duration.inMilliseconds;
+        });
+      }
+    });
   }
 
   Future<void> _checkConnectivity() async {
@@ -66,6 +75,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
       await _audioPlayer.setUrl(
         AuthService.baseUrl + '/stream/' + book!.fileName!,
       );
+      _audioPlayer.durationStream.listen((duration) {
+        if (duration != null) {
+          setState(() {
+            _totalDuration = duration;
+          });
+        }
+      });
       if (book != null) {
         setState(() {
           _book = book;
@@ -346,7 +362,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                               const Icon(Icons.access_time, size: 20),
                               const SizedBox(width: 5),
                               Text(
-                                loc.bookDurationTwoHours,
+                                (_formatDuration(_totalDuration)),
                                 style: const TextStyle(
                                   color: Color(0xFF191714),
                                   fontSize: 14,
@@ -384,11 +400,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              _formatDuration(
-                                Duration(
-                                  seconds: (_progressValue * 60).toInt(),
-                                ),
-                              ),
+                              _formatDuration(_audioPlayer.position),
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: const Color(0xFFA4A196),
                                 fontFamily:
@@ -409,7 +421,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                               ),
                             ),
                             Text(
-                              loc.bookDurationOneHour,
+                              _formatDuration(_totalDuration),
                               style: theme.textTheme.bodySmall?.copyWith(
                                 fontFamily:
                                     AppTextStyles.albraGroteskFontFamily,
