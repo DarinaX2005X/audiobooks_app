@@ -27,6 +27,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
   bool isOffline = false;
   bool _isFavorite = false;
   bool _isLoading = false;
+  bool _isSeeking = false;
   Book? _book;
 
   @override
@@ -41,12 +42,32 @@ class _DetailsScreenState extends State<DetailsScreen> {
     _checkConnectivity();
     _loadUserProfile();
     _loadBookDetails();
-    _audioPlayer.positionStream.listen((position) {
-      final duration = _audioPlayer.duration;
-      if (duration != null && duration.inMilliseconds > 0) {
+
+    // Listen to duration and position streams together, update only when both available
+    _audioPlayer.durationStream.listen((duration) {
+      if (duration != null) {
         setState(() {
-          _progressValue = position.inMilliseconds / duration.inMilliseconds;
+          _totalDuration = duration;
         });
+      }
+    });
+
+    _audioPlayer.positionStream.listen((position) {
+      if (!_isSeeking) {
+        // only update if user not dragging
+        final totalDuration = _audioPlayer.duration;
+        if (totalDuration != null && totalDuration.inMilliseconds > 0) {
+          final clampedPosition =
+              position > totalDuration ? totalDuration : position;
+          final newProgressValue =
+              clampedPosition.inMilliseconds / totalDuration.inMilliseconds;
+
+          if ((_progressValue - newProgressValue).abs() > 0.001) {
+            setState(() {
+              _progressValue = newProgressValue.clamp(0.0, 1.0);
+            });
+          }
+        }
       }
     });
   }
@@ -81,13 +102,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
       await _audioPlayer.setUrl(
         AuthService.baseUrl + '/stream/' + book!.fileName!,
       );
-      _audioPlayer.durationStream.listen((duration) {
-        if (duration != null) {
-          setState(() {
-            _totalDuration = duration;
-          });
-        }
-      });
       if (book != null) {
         setState(() {
           _book = book;
@@ -402,40 +416,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              _formatDuration(_audioPlayer.position),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: const Color(0xFFA4A196),
-                                fontFamily:
-                                    AppTextStyles.albraGroteskFontFamily,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            Expanded(
-                              child: Slider(
-                                value: _progressValue,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _progressValue = value;
-                                  });
-                                },
-                                activeColor: AppColors.accentRed,
-                                inactiveColor: Colors.black,
-                              ),
-                            ),
-                            Text(
-                              _formatDuration(_totalDuration),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                fontFamily:
-                                    AppTextStyles.albraGroteskFontFamily,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
                         const SizedBox(height: 24),
                         Container(
                           width: 343,
@@ -456,9 +436,23 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 Icons.music_note,
                                 color: theme.colorScheme.onSurface,
                               ),
-                              Icon(
-                                Icons.replay_10,
-                                color: theme.colorScheme.onSurface,
+                              GestureDetector(
+                                onTap: () async {
+                                  final currentPosition =
+                                      await _audioPlayer.position;
+                                  final newPosition =
+                                      currentPosition -
+                                      const Duration(seconds: 10);
+                                  await _audioPlayer.seek(
+                                    newPosition > Duration.zero
+                                        ? newPosition
+                                        : Duration.zero,
+                                  );
+                                },
+                                child: Icon(
+                                  Icons.replay_10,
+                                  color: theme.colorScheme.onSurface,
+                                ),
                               ),
                               Row(
                                 children: [
@@ -533,9 +527,25 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                   ),
                                 ],
                               ),
-                              Icon(
-                                Icons.forward_10,
-                                color: theme.colorScheme.onSurface,
+                              GestureDetector(
+                                onTap: () async {
+                                  final currentPosition =
+                                      await _audioPlayer.position;
+                                  final totalDuration =
+                                      _audioPlayer.duration ?? Duration.zero;
+                                  final newPosition =
+                                      currentPosition +
+                                      const Duration(seconds: 10);
+                                  await _audioPlayer.seek(
+                                    newPosition < totalDuration
+                                        ? newPosition
+                                        : totalDuration,
+                                  );
+                                },
+                                child: Icon(
+                                  Icons.forward_10,
+                                  color: theme.colorScheme.onSurface,
+                                ),
                               ),
                               Icon(
                                 Icons.speed,
@@ -580,46 +590,4 @@ class _DetailsScreenState extends State<DetailsScreen> {
     final seconds = twoDigits(duration.inSeconds.remainder(60));
     return '$minutes:$seconds';
   }
-
-  // void _startProgressSimulation() {
-  //   Future.delayed(const Duration(milliseconds: 500), () {
-  //     if (_isPlaying && mounted) {
-  //       setState(() {
-  //         _progressValue += 0.1;
-  //         if (_progressValue >= 1.0) {
-  //           _progressValue = 0.0;
-  //           _isPlaying = false;
-  //         }
-  //       });
-  //       if (_isPlaying) {
-  //         _startProgressSimulation();
-  //       }
-  //     }
-  //   });
-  // }
-  //
-  // void _togglePlay() async {
-  //   final isGuest = await _checkGuestMode();
-  //   if (isGuest || isOffline) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text(
-  //           'Sign in',
-  //           // AppLocalizations.of(context).onlyAvailableForRegisteredUsers,),
-  //         ),
-  //       ),
-  //     );
-  //     return;
-  //   }
-  //
-  //   if (_isPlaying) {
-  //     await _audioPlayer.pause();
-  //   } else {
-  //     await _audioPlayer.play();
-  //   }
-  //
-  //   setState(() {
-  //     _isPlaying = !_isPlaying;
-  //   });
-  // }
 }
