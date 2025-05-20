@@ -9,6 +9,8 @@ import '../services/auth_service.dart';
 import '../services/local_storage_service.dart';
 import 'text_screen.dart';
 
+import 'package:just_audio/just_audio.dart';
+
 class DetailsScreen extends StatefulWidget {
   final Book book;
 
@@ -19,6 +21,7 @@ class DetailsScreen extends StatefulWidget {
 }
 
 class _DetailsScreenState extends State<DetailsScreen> {
+  final _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
   double _progressValue = 0.0;
   bool isOffline = false;
@@ -47,7 +50,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
       if (userProfile != null) {
         final favorites = userProfile['favorites'] as List;
         setState(() {
-          _isFavorite = favorites.any((fav) => fav['audiobookId'] == widget.book.id);
+          _isFavorite = favorites.any(
+            (fav) => fav['audiobookId'] == widget.book.id,
+          );
         });
       }
     } catch (e) {
@@ -59,6 +64,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
     try {
       setState(() => _isLoading = true);
       final book = await ApiService.getBookDetails(widget.book.id);
+      await _audioPlayer.setUrl(
+        AuthService.baseUrl + '/stream/' + book!.fileName!,
+      );
       if (book != null) {
         setState(() {
           _book = book;
@@ -70,9 +78,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -80,7 +88,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
   Future<void> _toggleFavorite() async {
     if (isOffline) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).offlineCannotAddToFavorites)),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).offlineCannotAddToFavorites,
+          ),
+        ),
       );
       return;
     }
@@ -95,7 +107,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
       } else {
         await ApiService.addToFavorites(widget.book.id);
       }
-      
+
       setState(() {
         _isFavorite = !_isFavorite;
       });
@@ -168,7 +180,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -182,7 +197,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                             decoration: ShapeDecoration(
                               color: theme.colorScheme.surface,
                               shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(100)),
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(100),
+                                ),
                               ),
                             ),
                             child: Icon(
@@ -208,19 +225,27 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 decoration: ShapeDecoration(
                                   color: theme.colorScheme.surface,
                                   shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(100)),
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(100),
+                                    ),
                                   ),
                                 ),
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(),
-                                      )
-                                    : Icon(
-                                        _isFavorite ? Icons.favorite : Icons.favorite_border,
-                                        color: _isFavorite ? AppColors.accentRed : theme.colorScheme.onSurface,
-                                      ),
+                                child:
+                                    _isLoading
+                                        ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(),
+                                        )
+                                        : Icon(
+                                          _isFavorite
+                                              ? Icons.favorite
+                                              : Icons.favorite_border,
+                                          color:
+                                              _isFavorite
+                                                  ? AppColors.accentRed
+                                                  : theme.colorScheme.onSurface,
+                                        ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -229,7 +254,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => TextScreen(book: widget.book),
+                                    builder:
+                                        (context) =>
+                                            TextScreen(book: widget.book),
                                   ),
                                 );
                               },
@@ -239,7 +266,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 decoration: ShapeDecoration(
                                   color: theme.colorScheme.surface,
                                   shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(100)),
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(100),
+                                    ),
                                   ),
                                 ),
                                 child: Icon(
@@ -357,10 +386,14 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           children: [
                             Text(
                               _formatDuration(
-                                  Duration(seconds: (_progressValue * 60).toInt())),
+                                Duration(
+                                  seconds: (_progressValue * 60).toInt(),
+                                ),
+                              ),
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: const Color(0xFFA4A196),
-                                fontFamily: AppTextStyles.albraGroteskFontFamily,
+                                fontFamily:
+                                    AppTextStyles.albraGroteskFontFamily,
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
@@ -379,7 +412,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
                             Text(
                               loc.bookDurationOneHour,
                               style: theme.textTheme.bodySmall?.copyWith(
-                                fontFamily: AppTextStyles.albraGroteskFontFamily,
+                                fontFamily:
+                                    AppTextStyles.albraGroteskFontFamily,
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
@@ -393,34 +427,44 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           decoration: ShapeDecoration(
                             color: theme.colorScheme.surface,
                             shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(100)),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(100),
+                              ),
                             ),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              Icon(Icons.music_note, color: theme.colorScheme.onSurface),
-                              Icon(Icons.replay_10, color: theme.colorScheme.onSurface),
+                              Icon(
+                                Icons.music_note,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                              Icon(
+                                Icons.replay_10,
+                                color: theme.colorScheme.onSurface,
+                              ),
                               Row(
                                 children: [
-                                  Icon(Icons.skip_previous, color: theme.colorScheme.onSurface),
+                                  Icon(
+                                    Icons.skip_previous,
+                                    color: theme.colorScheme.onSurface,
+                                  ),
                                   const SizedBox(width: 18),
                                   GestureDetector(
                                     onTap: () {
                                       if (isOffline) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
                                           SnackBar(
-                                            content: Text(loc.offlineCannotPlay),
+                                            content: Text(
+                                              loc.offlineCannotPlay,
+                                            ),
                                           ),
                                         );
                                         return;
                                       }
-                                      setState(() {
-                                        _isPlaying = !_isPlaying;
-                                        if (_isPlaying) {
-                                          _startProgressSimulation();
-                                        }
-                                      });
+                                      _togglePlay();
                                     },
                                     child: Container(
                                       width: 53,
@@ -430,17 +474,28 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                         shape: OvalBorder(),
                                       ),
                                       child: Icon(
-                                        _isPlaying ? Icons.pause : Icons.play_arrow,
+                                        _isPlaying
+                                            ? Icons.pause
+                                            : Icons.play_arrow,
                                         color: Colors.white,
                                       ),
                                     ),
                                   ),
                                   const SizedBox(width: 18),
-                                  Icon(Icons.skip_next, color: theme.colorScheme.onSurface),
+                                  Icon(
+                                    Icons.skip_next,
+                                    color: theme.colorScheme.onSurface,
+                                  ),
                                 ],
                               ),
-                              Icon(Icons.forward_10, color: theme.colorScheme.onSurface),
-                              Icon(Icons.speed, color: theme.colorScheme.onSurface),
+                              Icon(
+                                Icons.forward_10,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                              Icon(
+                                Icons.speed,
+                                color: theme.colorScheme.onSurface,
+                              ),
                             ],
                           ),
                         ),
@@ -481,20 +536,46 @@ class _DetailsScreenState extends State<DetailsScreen> {
     return '$minutes:$seconds';
   }
 
-  void _startProgressSimulation() {
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (_isPlaying && mounted) {
-        setState(() {
-          _progressValue += 0.1;
-          if (_progressValue >= 1.0) {
-            _progressValue = 0.0;
-            _isPlaying = false;
-          }
-        });
-        if (_isPlaying) {
-          _startProgressSimulation();
-        }
-      }
+  // void _startProgressSimulation() {
+  //   Future.delayed(const Duration(milliseconds: 500), () {
+  //     if (_isPlaying && mounted) {
+  //       setState(() {
+  //         _progressValue += 0.1;
+  //         if (_progressValue >= 1.0) {
+  //           _progressValue = 0.0;
+  //           _isPlaying = false;
+  //         }
+  //       });
+  //       if (_isPlaying) {
+  //         _startProgressSimulation();
+  //       }
+  //     }
+  //   });
+  // }
+
+  void _togglePlay() async {
+    final isGuest = await _checkGuestMode();
+    if (isGuest || isOffline) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Sign in',
+            // AppLocalizations.of(context).onlyAvailableForRegisteredUsers,),
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (_isPlaying) {
+      await _audioPlayer.pause();
+    } else {
+      await _audioPlayer.play();
+    }
+
+    setState(() {
+      _isPlaying = !_isPlaying;
     });
   }
 }
+

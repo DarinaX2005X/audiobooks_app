@@ -11,10 +11,9 @@ import '../models/user.dart';
 
 class AuthService {
   static const String baseUrl = 'http://37.151.246.104:3000/api';
-  static final Dio _dio = Dio(BaseOptions(
-    baseUrl: baseUrl,
-    validateStatus: (status) => status! < 500,
-  ));
+  static final Dio _dio = Dio(
+    BaseOptions(baseUrl: baseUrl, validateStatus: (status) => status! < 500),
+  );
   static final CookieJar _cookieJar = CookieJar();
   static const String _loginKey = 'saved_login';
   static const String _passwordKey = 'saved_password';
@@ -27,11 +26,13 @@ class AuthService {
   static Future<void> init() async {
     debugPrint('🔄 AuthService: Initializing...');
     _dio.interceptors.add(CookieManager(_cookieJar));
-    
+
     // Проверяем сохраненные учетные данные
     final credentials = await getSavedCredentials();
     if (credentials['login'] != null && credentials['password'] != null) {
-      debugPrint('🔄 AuthService: Found saved credentials, attempting auto-login');
+      debugPrint(
+        '🔄 AuthService: Found saved credentials, attempting auto-login',
+      );
       await autoLogin();
     } else {
       debugPrint('🔄 AuthService: No saved credentials found');
@@ -71,7 +72,7 @@ class AuthService {
       debugPrint('🔄 Found saved credentials, attempting login...');
       return await AuthService.login(login, password);
     }
-    
+
     debugPrint('🔄 No saved credentials found');
     return false;
   }
@@ -99,7 +100,7 @@ class AuthService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedPin = prefs.getString(_pinKey);
-      
+
       if (savedPin == null) {
         debugPrint('❌ No PIN code found');
         return false;
@@ -139,15 +140,16 @@ class AuthService {
     }
   }
 
-  static Future<bool> login(String email, String password, {bool rememberMe = false}) async {
+  static Future<bool> login(
+    String email,
+    String password, {
+    bool rememberMe = false,
+  }) async {
     try {
       debugPrint('🔑 Attempting login with email: $email');
       final response = await _dio.post(
         '/auth/login',
-        data: {
-          'login': email,
-          'password': password,
-        },
+        data: {'login': email, 'password': password},
       );
 
       debugPrint('🔑 Login response status: ${response.statusCode}');
@@ -157,11 +159,11 @@ class AuthService {
         try {
           final data = response.data;
           _currentUser = User.fromJson(data['rest']);
-          
+
           // Сохраняем данные пользователя для офлайн режима
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('last_user_data', json.encode(data['rest']));
-          
+
           // Если rememberMe включен, сохраняем учетные данные
           if (rememberMe) {
             await saveCredentials(email, password);
@@ -182,7 +184,11 @@ class AuthService {
     }
   }
 
-  static Future<bool> register(String username, String email, String password) async {
+  static Future<bool> register(
+    String username,
+    String email,
+    String password,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('${ApiConstants.baseUrl}/auth/register'),
@@ -235,5 +241,49 @@ class AuthService {
     return prefs.getBool('isGuest') ?? false;
   }
 
+  static Future<bool> updateUserInfo({
+    String? email,
+    String? username,
+    String? password,
+  }) async {
+    if (_currentUser == null) {
+      debugPrint('❌ Cannot update user: Not authenticated');
+      return false;
+    }
+
+    final Map<String, dynamic> updateData = {};
+    if (email != null) updateData['email'] = email;
+    if (username != null) updateData['username'] = username;
+    if (password != null) updateData['password'] = password;
+
+    try {
+      final response = await _dio.put('/auth/update', data: updateData);
+
+      debugPrint(
+        '📝 Update user response: ${response.statusCode} ${response.data}',
+      );
+
+      if (response.statusCode == 200) {
+        _currentUser = User.fromJson(response.data['rest']);
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(
+          'last_user_data',
+          json.encode(response.data['rest']),
+        );
+
+        debugPrint('✅ User info updated successfully');
+        return true;
+      } else {
+        debugPrint('❌ Failed to update user info: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('❌ Exception while updating user: $e');
+      return false;
+    }
+  }
+
   static Dio get dioInstance => _dio;
 }
+
