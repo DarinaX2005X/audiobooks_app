@@ -30,6 +30,12 @@ class _DetailsScreenState extends State<DetailsScreen> {
   Book? _book;
 
   @override
+  void dispose() {
+    _audioPlayer.stop(); // or _audioPlayer.pause();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     _checkConnectivity();
