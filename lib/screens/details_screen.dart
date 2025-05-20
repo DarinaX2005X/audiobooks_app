@@ -22,6 +22,8 @@ class DetailsScreen extends StatefulWidget {
 
 class _DetailsScreenState extends State<DetailsScreen> {
   final _audioPlayer = AudioPlayer();
+  final List<double> _speedOptions = [0.5, 1.0, 1.25, 1.5, 2.0];
+  double _currentSpeed = 1.0;
   double _progressValue = 0.0;
   Duration _totalDuration = Duration.zero;
   bool isOffline = false;
@@ -547,9 +549,27 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                   color: theme.colorScheme.onSurface,
                                 ),
                               ),
-                              Icon(
-                                Icons.speed,
-                                color: theme.colorScheme.onSurface,
+                              PopupMenuButton<double>(
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.speed),
+                                    Text('${_currentSpeed}x'),
+                                  ],
+                                ),
+                                onSelected: (value) {
+                                  setState(() {
+                                    _currentSpeed = value;
+                                  });
+                                  _audioPlayer.setSpeed(value);
+                                },
+                                itemBuilder: (context) {
+                                  return _speedOptions.map((speed) {
+                                    return PopupMenuItem(
+                                      value: speed,
+                                      child: Text('${speed}x'),
+                                    );
+                                  }).toList();
+                                },
                               ),
                             ],
                           ),
