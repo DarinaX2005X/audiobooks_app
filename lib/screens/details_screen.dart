@@ -22,7 +22,6 @@ class DetailsScreen extends StatefulWidget {
 
 class _DetailsScreenState extends State<DetailsScreen> {
   final _audioPlayer = AudioPlayer();
-  bool _isPlaying = false;
   double _progressValue = 0.0;
   bool isOffline = false;
   bool _isFavorite = false;
@@ -464,33 +463,49 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                         );
                                         return;
                                       }
-                                      _togglePlay();
+                                      // to do
                                     },
 
-                                    child: Container(
-                                      width: 53,
-                                      height: 53,
-                                      decoration: const ShapeDecoration(
-                                        color: AppColors.buttonRed,
-                                        shape: OvalBorder(),
-                                      ),
-                                      child: IconButton(
-                                        icon: Icon(
-                                          _isPlaying
-                                              ? Icons.pause
-                                              : Icons.play_arrow,
-                                        ),
-                                        onPressed: () async {
-                                          if (_isPlaying) {
-                                            await _audioPlayer.pause();
-                                          } else {
-                                            await _audioPlayer.play();
-                                          }
-                                          setState(() {
-                                            _isPlaying = !_isPlaying;
-                                          });
-                                        },
-                                      ),
+                                    child: StreamBuilder<PlayerState>(
+                                      stream: _audioPlayer.playerStateStream,
+                                      builder: (context, snapshot) {
+                                        final playerState = snapshot.data;
+                                        final isPlaying =
+                                            playerState?.playing ?? false;
+                                        final processingState =
+                                            playerState?.processingState;
+
+                                        final showPause =
+                                            isPlaying &&
+                                            processingState !=
+                                                ProcessingState.completed &&
+                                            processingState !=
+                                                ProcessingState.idle;
+
+                                        return Container(
+                                          width: 53,
+                                          height: 53,
+                                          decoration: const ShapeDecoration(
+                                            color: AppColors.buttonRed,
+                                            shape: OvalBorder(),
+                                          ),
+                                          child: IconButton(
+                                            icon: Icon(
+                                              showPause
+                                                  ? Icons.pause
+                                                  : Icons.play_arrow,
+                                              color: Colors.white,
+                                            ),
+                                            onPressed: () async {
+                                              if (showPause) {
+                                                await _audioPlayer.pause();
+                                              } else {
+                                                await _audioPlayer.play();
+                                              }
+                                            },
+                                          ),
+                                        );
+                                      },
                                     ),
                                   ),
                                   const SizedBox(width: 18),
@@ -564,29 +579,29 @@ class _DetailsScreenState extends State<DetailsScreen> {
   //     }
   //   });
   // }
-
-  void _togglePlay() async {
-    final isGuest = await _checkGuestMode();
-    if (isGuest || isOffline) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Sign in',
-            // AppLocalizations.of(context).onlyAvailableForRegisteredUsers,),
-          ),
-        ),
-      );
-      return;
-    }
-
-    if (_isPlaying) {
-      await _audioPlayer.pause();
-    } else {
-      await _audioPlayer.play();
-    }
-
-    setState(() {
-      _isPlaying = !_isPlaying;
-    });
-  }
+  //
+  // void _togglePlay() async {
+  //   final isGuest = await _checkGuestMode();
+  //   if (isGuest || isOffline) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text(
+  //           'Sign in',
+  //           // AppLocalizations.of(context).onlyAvailableForRegisteredUsers,),
+  //         ),
+  //       ),
+  //     );
+  //     return;
+  //   }
+  //
+  //   if (_isPlaying) {
+  //     await _audioPlayer.pause();
+  //   } else {
+  //     await _audioPlayer.play();
+  //   }
+  //
+  //   setState(() {
+  //     _isPlaying = !_isPlaying;
+  //   });
+  // }
 }
