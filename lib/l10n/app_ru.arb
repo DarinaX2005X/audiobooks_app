@@ -202,5 +202,10 @@
   "save": "Сохранить",
   "fillRequiredFields": "Пожалуйста, заполните все обязательные поля",
   "profileUpdated": "Профиль успешно обновлен",
-  "errorUpdatingProfile": "Не удалось обновить профиль"
+  "errorUpdatingProfile": "Не удалось обновить профиль",
+  "notificationsEnabled": "Уведомления включены",
+  "notificationsDisabled": "Уведомления выключены",
+  "dataSyncEnabled": "Синхронизация данных включена",
+  "dataSyncDisabled": "Синхронизация данных выключена",
+  "fontSizeChanged": "Размер шрифта изменен"
 }

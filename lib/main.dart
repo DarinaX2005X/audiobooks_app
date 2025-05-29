@@ -46,6 +46,8 @@ void main() async {
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
     ]);
 
     runApp(
@@ -74,9 +76,22 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  double _getFontSize(String size) {
+    switch (size) {
+      case 'small':
+        return 14.0;
+      case 'large':
+        return 18.0;
+      case 'medium':
+      default:
+        return 16.0;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<SettingsProvider>(context);
+    final fontSize = _getFontSize(settings.fontSize);
 
     return MaterialApp(
       title: 'Audio Books App',
@@ -100,9 +115,82 @@ class MyApp extends StatelessWidget {
           background: const Color(0xFFF1EEE3),
           surface: Colors.white,
         ),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Color(0xFF191714)),
-          bodyMedium: TextStyle(color: Color(0xFF191714)),
+        textTheme: TextTheme(
+          displayLarge: TextStyle(
+            color: const Color(0xFF191714),
+            fontSize: fontSize + 20,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          displayMedium: TextStyle(
+            color: const Color(0xFF191714),
+            fontSize: fontSize + 16,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          displaySmall: TextStyle(
+            color: const Color(0xFF191714),
+            fontSize: fontSize + 12,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          headlineLarge: TextStyle(
+            color: const Color(0xFF191714),
+            fontSize: fontSize + 10,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          headlineMedium: TextStyle(
+            color: const Color(0xFF191714),
+            fontSize: fontSize + 8,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          headlineSmall: TextStyle(
+            color: const Color(0xFF191714),
+            fontSize: fontSize + 6,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          titleLarge: TextStyle(
+            color: const Color(0xFF191714),
+            fontSize: fontSize + 4,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          titleMedium: TextStyle(
+            color: const Color(0xFF191714),
+            fontSize: fontSize + 2,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          titleSmall: TextStyle(
+            color: const Color(0xFF191714),
+            fontSize: fontSize,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          bodyLarge: TextStyle(
+            color: const Color(0xFF191714),
+            fontSize: fontSize,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          bodyMedium: TextStyle(
+            color: const Color(0xFF191714),
+            fontSize: fontSize - 2,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          bodySmall: TextStyle(
+            color: const Color(0xFF191714),
+            fontSize: fontSize - 4,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          labelLarge: TextStyle(
+            color: const Color(0xFF191714),
+            fontSize: fontSize,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          labelMedium: TextStyle(
+            color: const Color(0xFF191714),
+            fontSize: fontSize - 2,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          labelSmall: TextStyle(
+            color: const Color(0xFF191714),
+            fontSize: fontSize - 4,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
         ),
         iconTheme: const IconThemeData(color: Color(0xFF191714)),
         elevatedButtonTheme: ElevatedButtonThemeData(
@@ -125,9 +213,82 @@ class MyApp extends StatelessWidget {
           background: const Color(0xFF191714),
           surface: const Color(0xFF292929),
         ),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white),
+        textTheme: TextTheme(
+          displayLarge: TextStyle(
+            color: Colors.white,
+            fontSize: fontSize + 20,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          displayMedium: TextStyle(
+            color: Colors.white,
+            fontSize: fontSize + 16,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          displaySmall: TextStyle(
+            color: Colors.white,
+            fontSize: fontSize + 12,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          headlineLarge: TextStyle(
+            color: Colors.white,
+            fontSize: fontSize + 10,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          headlineMedium: TextStyle(
+            color: Colors.white,
+            fontSize: fontSize + 8,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          headlineSmall: TextStyle(
+            color: Colors.white,
+            fontSize: fontSize + 6,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          titleLarge: TextStyle(
+            color: Colors.white,
+            fontSize: fontSize + 4,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          titleMedium: TextStyle(
+            color: Colors.white,
+            fontSize: fontSize + 2,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          titleSmall: TextStyle(
+            color: Colors.white,
+            fontSize: fontSize,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          bodyLarge: TextStyle(
+            color: Colors.white,
+            fontSize: fontSize,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          bodyMedium: TextStyle(
+            color: Colors.white,
+            fontSize: fontSize - 2,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          bodySmall: TextStyle(
+            color: Colors.white,
+            fontSize: fontSize - 4,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          labelLarge: TextStyle(
+            color: Colors.white,
+            fontSize: fontSize,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          labelMedium: TextStyle(
+            color: Colors.white,
+            fontSize: fontSize - 2,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
+          labelSmall: TextStyle(
+            color: Colors.white,
+            fontSize: fontSize - 4,
+            fontFamily: AppTextStyles.albraFontFamily,
+          ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
         elevatedButtonTheme: ElevatedButtonThemeData(

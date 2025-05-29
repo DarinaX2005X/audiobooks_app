@@ -189,5 +189,10 @@
   "save": "Сақтау",
   "fillRequiredFields": "Барлық міндетті өрістерді толтырыңыз",
   "profileUpdated": "Профиль сәтті жаңартылды",
-  "errorUpdatingProfile": "Профильді жаңарту сәтсіз аяқталды"
+  "errorUpdatingProfile": "Профильді жаңарту сәтсіз аяқталды",
+  "notificationsEnabled": "Хабарландырулар қосылды",
+  "notificationsDisabled": "Хабарландырулар өшірілді",
+  "dataSyncEnabled": "Деректер синхронизациясы қосылды",
+  "dataSyncDisabled": "Деректер синхронизациясы өшірілді",
+  "fontSizeChanged": "Қаріп өлшемі өзгертілді"
 }

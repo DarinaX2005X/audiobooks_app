@@ -227,56 +227,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         value: settings.notificationsEnabled,
                         onChanged: (value) {
                           settings.setNotificationsEnabled(value);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                value ? loc.notificationsEnabled : loc.notificationsDisabled,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: Colors.white,
+                                ),
+                              ),
+                              backgroundColor: theme.colorScheme.primary,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
                         },
                         activeColor: theme.colorScheme.primary,
-                      ),
-                    ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-
-                    // Reading Preferences Section
-                    Text(
-                      loc.readingPreferences,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontFamily: AppTextStyles.albraFontFamily,
-                      ),
-                    ),
-                    ListTile(
-                      title: Text(
-                        loc.fontSizeSmall,
-                        style: theme.textTheme.bodyLarge,
-                      ),
-                      leading: Radio<String>(
-                        value: 'small',
-                        groupValue: settings.fontSize,
-                        onChanged: (value) {
-                          settings.setFontSize('small');
-                        },
-                      ),
-                    ),
-                    ListTile(
-                      title: Text(
-                        loc.fontSizeMedium,
-                        style: theme.textTheme.bodyLarge,
-                      ),
-                      leading: Radio<String>(
-                        value: 'medium',
-                        groupValue: settings.fontSize,
-                        onChanged: (value) {
-                          settings.setFontSize('medium');
-                        },
-                      ),
-                    ),
-                    ListTile(
-                      title: Text(
-                        loc.fontSizeLarge,
-                        style: theme.textTheme.bodyLarge,
-                      ),
-                      leading: Radio<String>(
-                        value: 'large',
-                        groupValue: settings.fontSize,
-                        onChanged: (value) {
-                          settings.setFontSize('large');
-                        },
                       ),
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
@@ -297,8 +261,74 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         value: settings.dataSyncEnabled,
                         onChanged: (value) {
                           settings.setDataSyncEnabled(value);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                value ? loc.dataSyncEnabled : loc.dataSyncDisabled,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: Colors.white,
+                                ),
+                              ),
+                              backgroundColor: theme.colorScheme.primary,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
                         },
                         activeColor: theme.colorScheme.primary,
+                      ),
+                    ),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+
+                    // Reading Preferences Section
+                    Text(
+                      loc.readingPreferences,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontFamily: AppTextStyles.albraFontFamily,
+                      ),
+                    ),
+                    ListTile(
+                      title: Text(
+                        loc.fontSizeSmall,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontSize: 14,
+                        ),
+                      ),
+                      leading: Radio<String>(
+                        value: 'small',
+                        groupValue: settings.fontSize,
+                        onChanged: (value) {
+                          settings.setFontSize(value!);
+                        },
+                      ),
+                    ),
+                    ListTile(
+                      title: Text(
+                        loc.fontSizeMedium,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontSize: 16,
+                        ),
+                      ),
+                      leading: Radio<String>(
+                        value: 'medium',
+                        groupValue: settings.fontSize,
+                        onChanged: (value) {
+                          settings.setFontSize(value!);
+                        },
+                      ),
+                    ),
+                    ListTile(
+                      title: Text(
+                        loc.fontSizeLarge,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontSize: 18,
+                        ),
+                      ),
+                      leading: Radio<String>(
+                        value: 'large',
+                        groupValue: settings.fontSize,
+                        onChanged: (value) {
+                          settings.setFontSize(value!);
+                        },
                       ),
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),

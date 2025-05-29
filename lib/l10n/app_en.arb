@@ -189,5 +189,10 @@
   "save": "Save",
   "fillRequiredFields": "Please fill in all required fields",
   "profileUpdated": "Profile updated successfully",
-  "errorUpdatingProfile": "Failed to update profile"
+  "errorUpdatingProfile": "Failed to update profile",
+  "notificationsEnabled": "Notifications enabled",
+  "notificationsDisabled": "Notifications disabled",
+  "dataSyncEnabled": "Data sync enabled",
+  "dataSyncDisabled": "Data sync disabled",
+  "fontSizeChanged": "Font size changed"
 }
